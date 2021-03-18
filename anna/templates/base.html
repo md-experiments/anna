@@ -75,9 +75,9 @@
             <td>
             {% for label in labels %}
             {% if label.name in data_point.labels %}
-            <a type="button" class="btn btn-{{ label.button_style }}" href="/update/{{config_name}}/{{ file_name }}/{{ label.name }}/{{ data_point.hash_id }}">{{ label.title }}</a>
+            <a type="button" name="{{ data_point.hash_id }}" class="btn btn-{{ label.button_style }}" href="/update/{{config_name}}/{{ file_name }}/{{ label.name }}/{{ data_point.hash_id }}">{{ label.title }}</a>
             {% else %}
-            <a type="button" class="btn btn-outline-{{ label.button_style }}" href="/update/{{config_name}}/{{ file_name }}/{{ label.name }}/{{ data_point.hash_id }}">{{ label.title }}</a>
+            <a type="button" name="{{ data_point.hash_id }}" class="btn btn-outline-{{ label.button_style }}" href="/update/{{config_name}}/{{ file_name }}/{{ label.name }}/{{ data_point.hash_id }}">{{ label.title }}</a>
             {% endif %}
             {% endfor %}
             </td>

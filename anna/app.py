@@ -24,7 +24,7 @@ def home(file_name,config_name):
 @app.route("/update/<string:config_name>/<string:file_name>/<string:label_name>/<string:dp_id>")
 def update(label_name, dp_id, file_name, config_name):
     DataSet(file_name, data_path, config_name).annotate(idx=dp_id,content = label_name)
-    return redirect(f"/annotate/{config_name}/{file_name}")
+    return redirect(f"/annotate/{config_name}/{file_name}#{dp_id}")
 
 
 if __name__ == "__main__":
