@@ -15,3 +15,15 @@ This is a simple annotator tool
  3. Do not forget to restart the server if you add new files or new configs, 
 
  NB: Annotations use the column specified as `index_cols` if that column is not unique, annotation will be ambiguous
+
+ ## Alex the example
+ This is Alex, he is an example
+
+ 1. Notice how there can be a number of labels per row (defined in the config file)
+ 2. You can label and un-label as you like and feel
+ 3. If two lines have the same index, labels will be ambiguous
+ 
+
+<p align="left">
+  <img src="assets/alex.gif" width=800>
+</p>
