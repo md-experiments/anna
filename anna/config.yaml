@@ -1,0 +1,15 @@
+bob:
+  labels_config: 
+    - Green
+    - Blue
+    - Another
+    - New
+    - Tired
+  index_cols: index
+  target: text
+transcripts:
+  labels_config: 
+    - Important
+    - New Section
+  index_cols: time_stamp
+  target: sentence
