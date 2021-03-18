@@ -15,10 +15,18 @@ list_configs = list(configs.keys())
 list_files = files_in_dir(dataset_path)
 list_files = [f.split(dataset_path)[1] for f in list_files if not f.endswith('DS_Store')]
 
-print(list_files)
+@app.route("/")
+def home0():
+    file_name = 'alex.csv'
+    config_name = 'example'
+    ds = DataSet(file_name, data_path, config_name)
+    ds_list = ds.all()
+    return render_template("base.html", list_files=list_files, 
+            data_list=ds_list, file_name = file_name, labels = ds.labels, config_name = config_name, list_configs = list_configs)
+
+
 @app.route("/annotate/<string:config_name>/<string:file_name>")
 def home(file_name,config_name):
-
     ds = DataSet(file_name, data_path, config_name)
     ds_list = ds.all()
     return render_template("base.html", list_files=list_files, 
