@@ -29,11 +29,21 @@
             </ul>
           </div>
         <hr>
-
-        {% for data_point in data_list %}
-        <div class="ui segment">
-            <p class="ui big header">{{data_point.id }} | {{ data_point.title }}
-          
+        <div class="container">
+        <table class="table table-hover table-striped">
+            <thead>
+                <tr>
+                    <th>Index</th>
+                    <th>Content</th>
+                    <th>Labels</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for data_point in data_list %}
+            <tr>
+            <td>{{data_point.id }}</td>
+            <td>{{ data_point.title }}</td>
+            <td>
             {% for label in labels %}
             {% if label.name in data_point.labels %}
             <a type="button" class="btn btn-{{ label.button_style }}" href="/update/{{ file_name }}/{{ label.name }}/{{ data_point.hash_id }}">{{ label.title }}</a>
@@ -41,9 +51,11 @@
             <a type="button" class="btn btn-outline-{{ label.button_style }}" href="/update/{{ file_name }}/{{ label.name }}/{{ data_point.hash_id }}">{{ label.title }}</a>
             {% endif %}
             {% endfor %}
-        </p>
-        </div>
-        {% endfor %}
+            </td>
+            {% endfor %}
+            </tr>
+            </tbody>
+        </table>
     </div>
 </body>
 
