@@ -5,11 +5,11 @@ bob:
     - Another
     - New
     - Tired
-  index_cols: index
+  index_cols: idx
   target: text
 transcripts:
   labels_config: 
     - Important
     - New Section
   index_cols: time_stamp
-  target: sentence
+  target: text

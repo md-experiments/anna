@@ -2,8 +2,8 @@
 import json
 import os
 import pandas as pd
-from utils import hash_text
-
+from utils import hash_text, read_yaml
+import yaml
 
 class FileManager():
     def __init__(self, path):
@@ -44,7 +44,8 @@ class FileManager():
 
 
 class DataSet():
-    def __init__(self, file, data_path):
+    def __init__(self, file, data_path, config_name):
+        self._read_config(config_name)
         self.cm_d = FileManager(f'{data_path}/datasets/')
         self.cm_a = FileManager(f'{data_path}/annotations/')
         self.file = file
@@ -53,9 +54,24 @@ class DataSet():
 
     def all(self):
         # Lists all points
-        return [{'id':i,'title':t,'labels':self.annotations.get(hash_text(i),[]), 'hash_id': hash_text(i)} for i,t in zip(self.df_items.index,self.df_items['text'].values)]
+        if (self.index_col in self.df_items.columns) and (self.target in self.df_items.columns):
+            return [{'id':i,'title':t,'labels':self.annotations.get(hash_text(i),[]), 'hash_id': hash_text(i)} 
+                    for i,t in zip(self.df_items[self.index_col],self.df_items[self.target].values)]
+        else:
+            return []
 
     def annotate(self, idx, content):
         # annotates a datapoint
         self.cm_a.add_line_json(self.file+'_annotations.txt', [str(idx), content])
         self.annotations = self.cm_a.read_json(self.file+'_annotations.txt')
+
+    def _read_config(self,config_name):
+        read_configs = read_yaml('./config.yaml')
+        config = read_configs[config_name]
+
+        button_colors =['primary','secondary','success','warning','info','light']
+        self.labels =[
+            {'name':lbl.lower(),'title':lbl,'button_style':button_colors[i]} for i,lbl in enumerate(config['labels_config'])
+        ]
+        self.index_col = config['index_cols']
+        self.target = config['target']

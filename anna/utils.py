@@ -2,6 +2,12 @@ import string
 import os
 from hashlib import sha256, md5
 import datetime
+import yaml
+
+def read_yaml(path):
+    with open(path) as file:
+        read_configs = yaml.load(file, Loader=yaml.FullLoader)
+    return read_configs
 
 def remove_punctuation(s):
     return s.translate(str.maketrans('', '', string.punctuation))
