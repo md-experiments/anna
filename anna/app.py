@@ -3,19 +3,22 @@ import os
 import pandas as pd
 import json
 import yaml
-from utils import read_yaml
+from utils import read_yaml, files_in_dir
 from content import FileManager, DataSet
 
 app = Flask(__name__)
 
 data_path = './data'
-
+dataset_path = 'data/datasets/'
 configs = read_yaml('./config.yaml')
 list_configs = list(configs.keys())
+list_files = files_in_dir(dataset_path)
+list_files = [f.split(dataset_path)[1] for f in list_files if not f.endswith('DS_Store')]
 
+print(list_files)
 @app.route("/annotate/<string:config_name>/<string:file_name>")
 def home(file_name,config_name):
-    list_files = ['joe_rogan_1169_elon_musk_transcript','john','alex']
+
     ds = DataSet(file_name, data_path, config_name)
     ds_list = ds.all()
     return render_template("base.html", list_files=list_files, 

@@ -49,8 +49,9 @@ class DataSet():
         self.cm_d = FileManager(f'{data_path}/datasets/')
         self.cm_a = FileManager(f'{data_path}/annotations/')
         self.file = file
-        self.df_items = self.cm_d.read_csv(self.file+'.csv')
-        self.annotations = self.cm_a.read_json(self.file+'_annotations.txt')
+        self.df_items = self.cm_d.read_csv(self.file)
+        self.file_path_annotations = self.file.replace('.csv','').replace('.txt','')+'_annotations.txt'
+        self.annotations = self.cm_a.read_json(self.file_path_annotations)
 
     def all(self):
         # Lists all points
@@ -62,8 +63,8 @@ class DataSet():
 
     def annotate(self, idx, content):
         # annotates a datapoint
-        self.cm_a.add_line_json(self.file+'_annotations.txt', [str(idx), content])
-        self.annotations = self.cm_a.read_json(self.file+'_annotations.txt')
+        self.cm_a.add_line_json(self.file_path_annotations, [str(idx), content])
+        self.annotations = self.cm_a.read_json(self.file_path_annotations)
 
     def _read_config(self,config_name):
         read_configs = read_yaml('./config.yaml')

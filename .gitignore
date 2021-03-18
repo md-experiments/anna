@@ -1,12 +1,17 @@
 
 # Model checkpoints
 *.pt
-*.csv
 *.zip
 
 .DS_Store
 __pycache__/
-data/
+anna/data/*
+!anna/data/datasets/
+anna/data/datasets/*
+!anna/data/datasets/alex.csv
+!anna/data/annotations/
+anna/data/annotations/*
+!anna/data/annotations/alex_annotations.txt
 .ipynb_checkpoints/
 
 # Data folders
@@ -15,4 +20,3 @@ data/
 aws_key*
 gcp_key*
 *.mp4
-data/
