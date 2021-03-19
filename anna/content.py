@@ -53,7 +53,7 @@ class DataSet():
         self.cm_a = FileManager(f'{data_path}/annotations/')
         self.file = file
         self.df_items = self.cm_d.read_csv(self.file)
-        self.file_path_annotations = self.file.replace('.csv','').replace('.txt','')+'_annotations.txt'
+        self.file_path_annotations =f"{self.file.replace('.csv','').replace('.txt','')}_{config_name}_annotations.txt"
         self.annotations = self.cm_a.read_json(self.file_path_annotations)
 
     def all(self):

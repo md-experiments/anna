@@ -13,3 +13,10 @@ transcripts:
     - New Section
   index_cols: time_stamp
   target: text
+video_slicing:
+  labels_config: 
+    - Select
+    - Begin
+    - End
+  index_cols: time_stamp
+  target: text
