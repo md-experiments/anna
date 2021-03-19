@@ -24,16 +24,6 @@ def home0():
     return render_template("base.html", list_files=list_files, 
             data_list=ds_list, file_name = file_name, labels = ds.labels, config_name = config_name, list_configs = list_configs)
 
-
-@app.route("/test")
-def test():
-    return render_template("base2.html")
-
-@app.route("/test/post", methods=['POST'])
-def test2():
-    data = request.form['name']
-    return data
-
 @app.route("/annotate/<string:config_name>/<string:file_name>")
 def home(file_name,config_name):
     ds = DataSet(file_name, data_path, config_name)
@@ -62,8 +52,8 @@ def update(label_name, dp_id, file_name, config_name, label_type):
 def add_comment(dp_id, file_name, config_name):
     comment = request.form.get("comment_field")
     DataSet(file_name, data_path, config_name).annotate(idx = dp_id, content = comment, label_type = 'comment')
-    return redirect(f"/annotate/{config_name}/{file_name}#{dp_id}")
-
+    #return redirect(f"/annotate/{config_name}/{file_name}#{dp_id}")
+    return {}
 
 if __name__ == "__main__":
 

@@ -28,6 +28,17 @@
             $(data.name).attr("class",data.class);
         });
       });
+      $("button#comment_button").click(function(){
+        var clickedForm = $( this );
+        var url_link = clickedForm.attr( "name" );
+        var name_textarea = 'textarea[name="'.concat(url_link,'"]');
+        var comment_text = $(name_textarea).val();
+        $.post(url_link,
+            {'comment_field':comment_text},
+            function(data,status){
+        });
+
+    });
     });
     </script>
     
@@ -92,14 +103,14 @@
             {% endfor %}
             </td>
             <td>
-            <form class="row g-3" action="/comment/{{config_name}}/{{ file_name }}/{{ data_point.hash_id }}" method="post">
+            <div id="comment_form" class="row g-3">
                 <div class="col-auto">
-                    <textarea  name="comment_field" rows="1" cols="12">{{ data_point.comment }}</textarea>
+                    <textarea name="/comment/{{config_name}}/{{ file_name }}/{{ data_point.hash_id }}" rows="1" cols="12">{{ data_point.comment }}</textarea>
                 </div>
                 <div class="col-auto">
-                    <button type="submit" class="btn btn-dark">add</button>
+                    <button id="comment_button" name="/comment/{{config_name}}/{{ file_name }}/{{ data_point.hash_id }}" class="btn btn-dark">add</button>
                 </div>
-            </form>
+            </div>
             </td>
             {% endfor %}
             </tr>

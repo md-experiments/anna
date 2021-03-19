@@ -11,7 +11,7 @@ anna/data/datasets/*
 !anna/data/datasets/alex.csv
 !anna/data/annotations/
 anna/data/annotations/*
-!anna/data/annotations/alex_annotations.txt
+!anna/data/annotations/alex_example_annotations.txt
 .ipynb_checkpoints/
 
 # Data folders
