@@ -32,9 +32,15 @@ def home(file_name,config_name):
     return render_template("base.html", list_files=list_files, 
             data_list=ds_list, file_name = file_name, labels = ds.labels, config_name = config_name, list_configs = list_configs)
 
-@app.route("/update/<string:config_name>/<string:file_name>/<string:label_name>/<string:dp_id>")
-def update(label_name, dp_id, file_name, config_name):
-    DataSet(file_name, data_path, config_name).annotate(idx=dp_id,content = label_name)
+@app.route("/<string:label_type>/<string:config_name>/<string:file_name>/<string:label_name>/<string:dp_id>")
+def update(label_name, dp_id, file_name, config_name, label_type):
+    DataSet(file_name, data_path, config_name).annotate(idx = dp_id, content = label_name, label_type = label_type)
+    return redirect(f"/annotate/{config_name}/{file_name}#{dp_id}")
+
+@app.route("/comment/<string:config_name>/<string:file_name>/<string:dp_id>", methods=['POST'])
+def add_comment(dp_id, file_name, config_name):
+    comment = request.form.get("comment_field")
+    DataSet(file_name, data_path, config_name).annotate(idx = dp_id, content = comment, label_type = 'comment')
     return redirect(f"/annotate/{config_name}/{file_name}#{dp_id}")
 
 

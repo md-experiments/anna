@@ -28,17 +28,20 @@ class FileManager():
             df = pd.DataFrame([])
         return df
 
-    def add_line_json(self, file, content):
+    def add_line_json(self, file, entry):
         anno_dict = self.read_json(file)
-        if content[0] in anno_dict.keys():
+        if entry['id'] not in anno_dict.keys():
+            anno_dict[entry['id']] = {}
+
+        if entry['type'] in anno_dict[entry['id']]:
             #update_val = anno_dict[content[0]]
             #update_val.append(content[1])
-            if content[1] in anno_dict[content[0]]:
-                anno_dict[content[0]].remove(content[1])
+            if entry['value'] in anno_dict[entry['id']][entry['type']]:
+                anno_dict[entry['id']][entry['type']].remove(entry['value'])
             else:
-                anno_dict[content[0]].append(content[1])
+                anno_dict[entry['id']][entry['type']].append(entry['value'])
         else:
-            anno_dict[content[0]] = [content[1]]
+            anno_dict[entry['id']][entry['type']] = [entry['value']]
         self.write_json(file, anno_dict)
 
 
@@ -56,14 +59,21 @@ class DataSet():
     def all(self):
         # Lists all points
         if (self.index_col in self.df_items.columns) and (self.target in self.df_items.columns):
-            return [{'id':i,'title':t,'labels':self.annotations.get(hash_text(i),[]), 'hash_id': hash_text(i)} 
+            return [{
+                'id':i,
+                'title':t,
+                'labels':self.annotations.get(hash_text(i),{}).get('labels',[]), 
+                'comment':'; '.join(self.annotations.get(hash_text(i),{}).get('comment','')),
+                'hash_id': hash_text(i)
+                } 
                     for i,t in zip(self.df_items[self.index_col],self.df_items[self.target].values)]
         else:
             return []
 
-    def annotate(self, idx, content):
+    def annotate(self, idx, content,label_type):
         # annotates a datapoint
-        self.cm_a.add_line_json(self.file_path_annotations, [str(idx), content])
+        entry = {'id':str(idx), 'value':content,'type':label_type}
+        self.cm_a.add_line_json(self.file_path_annotations, entry)
         self.annotations = self.cm_a.read_json(self.file_path_annotations)
 
     def _read_config(self,config_name):
