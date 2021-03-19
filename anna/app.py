@@ -9,14 +9,19 @@ from content import FileManager, DataSet
 app = Flask(__name__)
 
 data_path = './data'
-dataset_path = 'data/datasets/'
-configs = read_yaml('./config.yaml')
-list_configs = list(configs.keys())
-list_files = files_in_dir(dataset_path)
-list_files = [f.split(dataset_path)[1] for f in list_files if not f.endswith('DS_Store')]
 
 @app.route("/")
 def home0():
+    # Load list_files and list_configs as global variables
+    configs = read_yaml('./config.yaml')
+    global list_configs
+    list_configs = list(configs.keys())
+    global list_files
+    dataset_path = f'{data_path}/datasets/'
+    list_files = files_in_dir(dataset_path)
+    list_files = [f.split(dataset_path)[1] for f in list_files if not f.endswith('DS_Store')]
+
+    # Default values for intro screen
     file_name = 'alex.csv'
     config_name = 'example'
     ds = DataSet(file_name, data_path, config_name)
