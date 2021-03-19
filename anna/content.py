@@ -33,7 +33,7 @@ class FileManager():
         if entry['id'] not in anno_dict.keys():
             anno_dict[entry['id']] = {}
 
-        if entry['type'] in anno_dict[entry['id']]:
+        if entry['type'] in anno_dict[entry['id']] and entry['type']!='comment':
             #update_val = anno_dict[content[0]]
             #update_val.append(content[1])
             if entry['value'] in anno_dict[entry['id']][entry['type']]:
