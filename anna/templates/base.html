@@ -13,6 +13,24 @@
     <!-- JavaScript Bundle with Popper -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta2/dist/js/bootstrap.bundle.min.js" integrity="sha384-b5kHyXgcpbZJO/tY9Ul7kGkf1S0CWuKcCD38l8YkeH8z8QjE0GmW1gYU5S9FOnJ0" crossorigin="anonymous"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <style>
+        .has-search .form-control {
+            padding-left: 2.375rem;
+        }
+
+        .has-search .form-control-feedback {
+            position: absolute;
+            z-index: 2;
+            display: block;
+            width: 2.375rem;
+            height: 2.375rem;
+            line-height: 2.375rem;
+            text-align: center;
+            pointer-events: none;
+            color: #aaa;
+        }
+
+   </style>
     <script>
 
     $(document).ready(function(){
@@ -83,7 +101,16 @@
         </table>
         <hr>
         <div class="container">
-        <table class="table table-hover table-striped">
+        <div class="form-group has-search">
+            <span class="fa fa-search form-control-feedback">
+                <svg aria-hidden="true" class="fa fa-search has-search" width="14" height="14" viewBox="0 0 18 18">
+                    <path d="M18 16.5l-5.14-5.18h-.35a7 7 0 10-1.19 1.19v.35L16.5 18l1.5-1.5zM12 7A5 5 0 112 7a5 5 0 0110 0z"></path>
+                </svg>
+            </span>
+            
+            <input type="text" id="myInput" class="form-control" onkeyup="myFunction()" placeholder="Search content..">
+        </div>
+        <table id='mainTable' class="table table-hover table-striped">
             <thead>
                 <tr>
                     <th>#</th>
@@ -121,7 +148,29 @@
             </tbody>
         </table>
     </div>
-
+    <script>
+    function myFunction() {
+        // Declare variables
+        var input, filter, table, tr, td, i, txtValue;
+            input = document.getElementById("myInput");
+            filter = input.value.toUpperCase();
+            table = document.getElementById("mainTable");
+            tr = table.getElementsByTagName("tr");
+    
+            // Loop through all table rows, and hide those who don't match the search query
+            for (i = 0; i < tr.length; i++) {
+                td = tr[i].getElementsByTagName("td")[1];
+                if (td) {
+                txtValue = td.textContent || td.innerText;
+                if (txtValue.toUpperCase().indexOf(filter) > -1) {
+                    tr[i].style.display = "";
+                } else {
+                    tr[i].style.display = "none";
+                }
+                }
+            }
+        }
+    </script>
 </body>
 
 </html>
