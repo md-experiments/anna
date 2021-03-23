@@ -8,8 +8,8 @@ from content import FileManager, DataSet, get_global_vars
 
 app = Flask(__name__)
 
-data_path = './data'
-list_configs, list_files = get_global_vars(data_path)
+data_path = '../../endeavor/text_structure_extract/data'
+#list_configs, list_files = get_global_vars(data_path)
 
 @app.route("/")
 def home0():
@@ -26,6 +26,7 @@ def home0():
 
 @app.route("/annotate/<string:config_name>/<string:file_name>")
 def home(file_name,config_name):
+    list_configs, list_files = get_global_vars(data_path)
     ds = DataSet(file_name, data_path, config_name)
     ds_list = ds.all()
     return render_template("base.html", list_files=list_files, 

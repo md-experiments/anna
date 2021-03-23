@@ -8,12 +8,12 @@ from utils import read_yaml, files_in_dir
 
 def get_global_vars(data_path):
     configs = read_yaml('./config.yaml')
-    global list_configs
     list_configs = list(configs.keys())
-    global list_files
+    list_configs.sort()
     dataset_path = f'{data_path}/datasets/'
     list_files = files_in_dir(dataset_path)
     list_files = [f.split(dataset_path)[1] for f in list_files if not f.endswith('DS_Store')]
+    list_files.sort()
     return list_configs, list_files
 
 class FileManager():
