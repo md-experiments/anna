@@ -2,9 +2,8 @@
 import json
 import os
 import pandas as pd
-from utils import hash_text, read_yaml
+from utils import hash_text, read_yaml, files_in_dir
 import yaml
-from utils import read_yaml, files_in_dir
 
 def get_global_vars(data_path):
     configs = read_yaml('./config.yaml')
