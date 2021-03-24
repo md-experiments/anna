@@ -116,7 +116,8 @@
             <thead>
                 <tr>
                     <th>#</th>
-                    <th style="width: 50%">Content</th>
+                    <th>ID</th>
+                    <th style="width: 45%">Content</th>
                     <th>Labels</th>
                     <th style="width: 20%">Comment</th>
                 </tr>
@@ -124,6 +125,7 @@
             <tbody>
             {% for data_point in data_list %}
             <tr>
+            <td>{{data_point.nr }}</td>
             <td>{{data_point.id }}</td>
             <td>{{ data_point.title }}</td>
             <td>
@@ -161,7 +163,7 @@
     
             // Loop through all table rows, and hide those who don't match the search query
             for (i = 0; i < tr.length; i++) {
-                td = tr[i].getElementsByTagName("td")[1];
+                td = tr[i].getElementsByTagName("td")[2];
                 if (td) {
                 txtValue = td.textContent || td.innerText;
                 if (txtValue.toUpperCase().indexOf(filter) > -1) {

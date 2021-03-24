@@ -70,13 +70,14 @@ class DataSet():
         # Lists all points
         if (self.index_col in self.df_items.columns) and (self.target in self.df_items.columns):
             return [{
-                'id':i,
+                'nr': ii,
+                'id': idx,
                 'title':t,
-                'labels':self.annotations.get(hash_text(i),{}).get('labels',[]), 
-                'comment':'; '.join(self.annotations.get(hash_text(i),{}).get('comment','')),
-                'hash_id': hash_text(i)
+                'labels':self.annotations.get(hash_text(idx),{}).get('labels',[]), 
+                'comment':'; '.join(self.annotations.get(hash_text(idx),{}).get('comment','')),
+                'hash_id': hash_text(idx)
                 } 
-                    for i,t in zip(self.df_items[self.index_col],self.df_items[self.target].values)]
+                    for ii, idx, t in zip(range(len(self.df_items)),self.df_items[self.index_col],self.df_items[self.target].values)]
         else:
             return []
 
