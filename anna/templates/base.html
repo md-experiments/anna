@@ -42,10 +42,13 @@
         $.post(url_link,
         {
             'label_name': clickedBtnID.attr('class'),
+            'label_title': clickedBtnID.text(),
             'url': url_link
             },
         function(data,status){
             $(data.name).attr("class",data.class);
+            var current_value_button = $('span[name="counter'.concat(data.label_title,'"]')).text()
+            $('span[name="counter'.concat(data.label_title,'"]')).text(parseInt(current_value_button)+parseInt(data.outcome))
         });
       });
       $("button#comment_button").click(function(){
@@ -56,6 +59,8 @@
         $.post(url_link,
             {'comment_field':comment_text},
             function(data,status){
+            var current_value_button = $('span[name="counterComments"]').text()
+            $('span[name="counterComments"]').text(parseInt(current_value_button)+parseInt(data.outcome))
         });
 
     });
@@ -70,7 +75,7 @@
         <table>
             <tr>
               <th>File: </th>
-              <th>
+              <th colspan="4">
                 <div class="dropdown">
                     <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton1" data-bs-toggle="dropdown" aria-expanded="false">
                         {{ file_name }}
@@ -82,6 +87,8 @@
                     </ul>
                 </div>
             </th>
+            </tr>
+            <tr>
             <th>Format: </th>
             <th>
                 <div class="dropdown">
@@ -98,6 +105,14 @@
             <th></th>
             <th>
                 <a class="btn btn-primary" href="/annotate/{{ config_name }}/{{ file_name }}" role="button">Refresh</a>
+            </th>
+            <th>
+                <div class="btn-group" role="group">
+                    {% for label in labels %}
+                    <button class="btn btn-{{ label.button_style }}">{{ label.title }}: <span name="counter{{ label.title }}">{{ label.count }}</span></a>
+                    {% endfor %}
+                    <button class="btn btn-dark">Comments: <span name="counterComments">{{ nr_comments }}</span></a>
+                </div>
             </th>
             </tr>
         </table>

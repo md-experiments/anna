@@ -22,7 +22,8 @@ def home0():
     ds = DataSet(file_name, data_path, config_name)
     ds_list = ds.all()
     return render_template("base.html", list_files=list_files, 
-            data_list=ds_list, file_name = file_name, labels = ds.labels, config_name = config_name, list_configs = list_configs)
+            data_list=ds_list, file_name = file_name, labels = ds.labels, 
+            config_name = config_name, list_configs = list_configs)
 
 @app.route("/annotate/<string:config_name>/<string:file_name>")
 def home(file_name,config_name):
@@ -30,31 +31,39 @@ def home(file_name,config_name):
     ds = DataSet(file_name, data_path, config_name)
     ds_list = ds.all()
     return render_template("base.html", list_files=list_files, 
-            data_list=ds_list, file_name = file_name, labels = ds.labels, config_name = config_name, list_configs = list_configs)
+            data_list=ds_list, file_name = file_name, labels = ds.labels, 
+            config_name = config_name, list_configs = list_configs, nr_comments = ds.nr_comments)
 
 @app.route("/<string:label_type>/<string:config_name>/<string:file_name>/<string:label_name>/<string:dp_id>", methods=['POST'])
 def update(label_name, dp_id, file_name, config_name, label_type):
     received_url = request.form['url']
     received_label_name = request.form['label_name']
+    label_title = request.form['label_title'].strip()
+
     if 'outline' in received_label_name:
         received_label_name = received_label_name.replace('outline-','')
     else:
         received_label_name = received_label_name.replace('btn-','btn-outline-')
-    DataSet(file_name, data_path, config_name).annotate(idx = dp_id, content = label_name, label_type = label_type)
+    outcome = DataSet(file_name, data_path, config_name).annotate(idx = dp_id, content = label_name, label_type = label_type)
     #return redirect(f"/annotate/{config_name}/{file_name}#{dp_id}")
     
     data = {
         'name':f'button[name="{received_url}"]',
-        'class':f'btn btn-{received_label_name}'
+        'class':f'btn btn-{received_label_name}',
+        'label_title':label_title,
+        'outcome': outcome
     }
+    print(outcome)
     return data
 
 @app.route("/comment/<string:config_name>/<string:file_name>/<string:dp_id>", methods=['POST'])
 def add_comment(dp_id, file_name, config_name):
     comment = request.form.get("comment_field")
-    DataSet(file_name, data_path, config_name).annotate(idx = dp_id, content = comment, label_type = 'comment')
+    outcome = DataSet(file_name, data_path, config_name).annotate(idx = dp_id, content = comment, label_type = 'comment')
     #return redirect(f"/annotate/{config_name}/{file_name}#{dp_id}")
-    return {}
+    return {
+        'outcome': outcome
+        }
 
 if __name__ == "__main__":
 

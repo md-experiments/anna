@@ -48,11 +48,26 @@ class FileManager():
             #update_val.append(content[1])
             if entry['value'] in anno_dict[entry['id']][entry['type']]:
                 anno_dict[entry['id']][entry['type']].remove(entry['value'])
+                outcome = -1
             else:
                 anno_dict[entry['id']][entry['type']].append(entry['value'])
+                outcome = 1
         else:
+            len_init_value = len(''.join(anno_dict[entry['id']].get(entry['type'],'')))
             anno_dict[entry['id']][entry['type']] = [entry['value']]
+            if entry['type']!='comment':
+                outcome = 1
+            # COMMENT no text now and there was text before
+            elif len(entry['value'])==0 and len_init_value>0:
+                outcome = -1
+            # COMMENT there is text now and no text before
+            elif len(entry['value'])>0 and len_init_value==0:
+                outcome = 1
+            # COMMENT and there was text before and there is text now OR there was no text and there is still no text
+            else:
+                outcome = 0
         self.write_json(file, anno_dict)
+        return outcome
 
 
 
@@ -69,23 +84,33 @@ class DataSet():
     def all(self):
         # Lists all points
         if (self.index_col in self.df_items.columns) and (self.target in self.df_items.columns):
-            return [{
-                'nr': ii,
-                'id': idx,
-                'title':t,
-                'labels':self.annotations.get(hash_text(idx),{}).get('labels',[]), 
-                'comment':'; '.join(self.annotations.get(hash_text(idx),{}).get('comment','')),
-                'hash_id': hash_text(idx)
-                } 
-                    for ii, idx, t in zip(range(len(self.df_items)),self.df_items[self.index_col],self.df_items[self.target].values)]
+            data = []
+            #for lbl in self.labels:
+            #    lbl['count'] = 0
+            for ii, idx, t in zip(range(len(self.df_items)),self.df_items[self.index_col],self.df_items[self.target].values):
+                d = {
+                    'nr': ii,
+                    'id': idx,
+                    'title':t,
+                    'labels':self.annotations.get(hash_text(idx),{}).get('labels',[]), 
+                    'comment':'; '.join(self.annotations.get(hash_text(idx),{}).get('comment','')),
+                    'hash_id': hash_text(idx)
+                    }
+                data.append(d)
+
+                for lbl in self.labels:
+                    lbl['count'] = lbl.get('count',0) + (1 if lbl['name'] in d['labels'] else 0)
+                self.nr_comments = self.nr_comments + (1 if len(d['comment']) else 0)
+            return data
         else:
             return []
 
     def annotate(self, idx, content,label_type):
         # annotates a datapoint
         entry = {'id':str(idx), 'value':content,'type':label_type}
-        self.cm_a.add_line_json(self.file_path_annotations, entry)
+        outcome = self.cm_a.add_line_json(self.file_path_annotations, entry)
         self.annotations = self.cm_a.read_json(self.file_path_annotations)
+        return outcome
 
     def _read_config(self,config_name):
         read_configs = read_yaml('./config.yaml')
@@ -93,7 +118,8 @@ class DataSet():
 
         button_colors =['primary','secondary','success','warning','info','light']
         self.labels =[
-            {'name':lbl.lower(),'title':lbl,'button_style':button_colors[i]} for i,lbl in enumerate(config['labels_config'])
+            {'name':lbl.lower(),'title':lbl,'button_style':button_colors[i], 'count': 0} for i,lbl in enumerate(config['labels_config'])
         ]
+        self.nr_comments = 0
         self.index_col = config['index_cols']
         self.target = config['target']
