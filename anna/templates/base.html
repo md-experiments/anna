@@ -51,7 +51,7 @@
             $('span[name="counter'.concat(data.label_title,'"]')).text(parseInt(current_value_button)+parseInt(data.outcome))
         });
       });
-      $("button#comment_button").click(function(){
+      $("textarea#comment_text").keyup(function(){
         var clickedForm = $( this );
         var url_link = clickedForm.attr( "name" );
         var name_textarea = 'textarea[name="'.concat(url_link,'"]');
@@ -132,9 +132,9 @@
                 <tr>
                     <th>#</th>
                     <th>ID</th>
-                    <th style="width: 45%">Content</th>
+                    <th style="width: 50%">Content</th>
                     <th>Labels</th>
-                    <th style="width: 20%">Comment</th>
+                    <th>Comment</th>
                 </tr>
             </thead>
             <tbody>
@@ -155,10 +155,7 @@
             <td>
             <div id="comment_form" class="row g-3">
                 <div class="col-auto">
-                    <textarea name="/comment/{{config_name}}/{{ file_name }}/{{ data_point.hash_id }}" rows="1" cols="12">{{ data_point.comment }}</textarea>
-                </div>
-                <div class="col-auto">
-                    <button id="comment_button" name="/comment/{{config_name}}/{{ file_name }}/{{ data_point.hash_id }}" class="btn btn-dark">add</button>
+                    <textarea id="comment_text" name="/comment/{{config_name}}/{{ file_name }}/{{ data_point.hash_id }}" rows="1" cols="12">{{ data_point.comment }}</textarea>
                 </div>
             </div>
             </td>
