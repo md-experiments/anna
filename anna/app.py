@@ -30,6 +30,7 @@ def home(file_name,config_name):
     list_configs, list_files = get_global_vars(data_path)
     ds = DataSet(file_name, data_path, config_name)
     ds_list = ds.all()
+    pd.DataFrame(ds_list).to_csv(os.path.join(data_path,f'{file_name}_{config_name}_latest.csv'))
     return render_template("base.html", list_files=list_files, 
             data_list=ds_list, file_name = file_name, labels = ds.labels, 
             config_name = config_name, list_configs = list_configs, nr_comments = ds.nr_comments)

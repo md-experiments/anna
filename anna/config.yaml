@@ -20,3 +20,15 @@ video_slicing:
     - End
   index_cols: time_stamp
   target: text
+google_search:
+  labels_config: 
+    - Keep
+  index_cols: idx
+  target: text
+  column_names:
+    - Domain
+    - Title
+    - Snippet
+  editable_columns:
+    - Snippet
+  add_remove_lines: True

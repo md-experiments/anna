@@ -104,15 +104,15 @@
             </th>
             <th></th>
             <th>
-                <a class="btn btn-primary" href="/annotate/{{ config_name }}/{{ file_name }}" role="button">Refresh</a>
-            </th>
-            <th>
                 <div class="btn-group" role="group">
                     {% for label in labels %}
                     <button class="btn btn-{{ label.button_style }}">{{ label.title }}: <span name="counter{{ label.title }}">{{ label.count }}</span></a>
                     {% endfor %}
                     <button class="btn btn-dark">Comments: <span name="counterComments">{{ nr_comments }}</span></a>
                 </div>
+            </th>
+            <th>
+                <a class="btn btn-warning" href="/annotate/{{ config_name }}/{{ file_name }}" role="button">Publish</a>
             </th>
             </tr>
         </table>
