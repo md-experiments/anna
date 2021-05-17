@@ -23,17 +23,18 @@ def home0():
     ds_list = ds.all()
     return render_template("base.html", list_files=list_files, 
             data_list=ds_list, file_name = file_name, labels = ds.labels, 
-            config_name = config_name, list_configs = list_configs)
+            config_name = config_name, list_configs = list_configs, editable_text = True)
 
 @app.route("/annotate/<string:config_name>/<string:file_name>")
 def home(file_name,config_name):
     list_configs, list_files = get_global_vars(data_path)
     ds = DataSet(file_name, data_path, config_name)
     ds_list = ds.all()
-    pd.DataFrame(ds_list).to_csv(os.path.join(data_path,f'{file_name}_{config_name}_latest.csv'))
+    pd.DataFrame(ds_list).to_csv(os.path.join(data_path,'annotations_latest',f'{file_name}_{config_name}_latest.csv'))
     return render_template("base.html", list_files=list_files, 
             data_list=ds_list, file_name = file_name, labels = ds.labels, 
-            config_name = config_name, list_configs = list_configs, nr_comments = ds.nr_comments)
+            config_name = config_name, list_configs = list_configs, 
+            nr_comments = ds.nr_comments, editable_text = True)
 
 @app.route("/<string:label_type>/<string:config_name>/<string:file_name>/<string:label_name>/<string:dp_id>", methods=['POST'])
 def update(label_name, dp_id, file_name, config_name, label_type):

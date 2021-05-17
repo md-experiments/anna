@@ -32,3 +32,18 @@ google_search:
   editable_columns:
     - Snippet
   add_remove_lines: True
+  search_column: Content
+script_editor:
+  labels_config:
+    - ppt
+    - vox
+  index_cols: time_stamp
+  target: text
+  column_names:
+    - Domain
+    - Title
+    - Snippet
+  editable_columns:
+    - Snippet
+  add_remove_lines: True
+  search_column: Content

@@ -73,8 +73,9 @@
     <div id="element" name="element" style="margin-top: 50px;" class="ui container">
         <h1 class="ui center aligned header">Annotator</h1>
         <table>
+            <!-- HEADER: ARTICLE selection -->
             <tr>
-              <th>File: </th>
+              <th>Article: </th>
               <th colspan="4">
                 <div class="dropdown">
                     <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton1" data-bs-toggle="dropdown" aria-expanded="false">
@@ -88,6 +89,7 @@
                 </div>
             </th>
             </tr>
+             <!-- HEADER: FORMAT, STATS & BUTTONS -->
             <tr>
             <th>Format: </th>
             <th>
@@ -128,6 +130,7 @@
             <input type="text" id="myInput" class="form-control" onkeyup="myFunction()" placeholder="Search content..">
         </div>
         <table id='mainTable' class="table table-hover table-striped">
+             <!-- TABLE HEAD -->
             <thead>
                 <tr>
                     <th>#</th>
@@ -142,7 +145,17 @@
             <tr>
             <td>{{data_point.nr }}</td>
             <td>{{data_point.id }}</td>
+            {% if editable_text %}
+            <td>
+                <div id="editable_text" name="/comment/{{config_name}}/{{ file_name }}/{{ data_point.hash_id }}">
+                    <div contenteditable="true">
+                        {{ data_point.title }}
+                    </div>
+                </div>
+            </td>
+            {% else %}
             <td>{{ data_point.title }}</td>
+            {% endif %}
             <td>
             {% for label in labels %}
             {% if label.name in data_point.labels %}
@@ -158,6 +171,14 @@
                     <textarea id="comment_text" name="/comment/{{config_name}}/{{ file_name }}/{{ data_point.hash_id }}" rows="1" cols="12">{{ data_point.comment }}</textarea>
                 </div>
             </div>
+            </td>
+            <td>
+                <input list="europe-countries" placeholder="Start typing...">
+                <datalist id="europe-countries">
+                    <option>Russia</option>
+                    <option>Germany</option>
+                    <option>United Kingdom</option>
+                </datalist>       
             </td>
             {% endfor %}
             </tr>
