@@ -23,7 +23,8 @@ def home0():
     ds_list = ds.all()
     return render_template("base.html", list_files=list_files, 
             data_list=ds_list, file_name = file_name, labels = ds.labels, 
-            config_name = config_name, list_configs = list_configs, editable_text = True)
+            config_name = config_name, list_configs = list_configs, 
+            nr_comments = ds.nr_comments, nr_edits = ds.nr_edits, editable_text = True)
 
 @app.route("/annotate/<string:config_name>/<string:file_name>")
 def home(file_name,config_name):
@@ -34,7 +35,8 @@ def home(file_name,config_name):
     return render_template("base.html", list_files=list_files, 
             data_list=ds_list, file_name = file_name, labels = ds.labels, 
             config_name = config_name, list_configs = list_configs, 
-            nr_comments = ds.nr_comments, editable_text = True)
+            nr_comments = ds.nr_comments, nr_edits = ds.nr_edits, editable_text = True)
+
 
 @app.route("/<string:label_type>/<string:config_name>/<string:file_name>/<string:label_name>/<string:dp_id>", methods=['POST'])
 def update(label_name, dp_id, file_name, config_name, label_type):
@@ -58,6 +60,7 @@ def update(label_name, dp_id, file_name, config_name, label_type):
     print(outcome)
     return data
 
+### ADDING COMMENTS
 @app.route("/comment/<string:config_name>/<string:file_name>/<string:dp_id>", methods=['POST'])
 def add_comment(dp_id, file_name, config_name):
     comment = request.form.get("comment_field")
@@ -67,34 +70,40 @@ def add_comment(dp_id, file_name, config_name):
         'outcome': outcome
         }
 
+### CONTENT EDITING - EDIT
 @app.route("/content_edits/<string:config_name>/<string:file_name>/<string:dp_id>", methods=['POST'])
 def edit_text(dp_id, file_name, config_name):
     comment = request.form.get("comment_field").strip()
-    print(comment)
+    received_url = request.form['url']
+    new_url = received_url.replace('content_edits','remove_edits')
+
     outcome = DataSet(file_name, data_path, config_name).annotate(idx = dp_id, content = comment, label_type = 'content')
+    print(outcome)
     #return redirect(f"/annotate/{config_name}/{file_name}#{dp_id}")
     return {
-        'outcome': outcome,
-        #'name':f'button[name="{received_url}"]',
-        #'class':f'btn btn-{received_label_name}',
-
-       'class': "badge badge-transparent" if edited else "badge bg-info"
-        
+       'outcome': outcome,
+       'name': f'badge[name="{received_url}"]',
+       'class': "badge bg-info",
+       'new_url': new_url
         }
 
+### CONTENT EDITING - RESET EDIT
 @app.route("/remove_edits/<string:config_name>/<string:file_name>/<string:dp_id>", methods=['POST'])
 def remove_edits(dp_id, file_name, config_name):
-    comment = request.form.get("comment_field").strip()
+    received_url = request.form['url']
+    new_url = received_url.replace('remove_edits','content_edits')
 
-    outcome = DataSet(file_name, data_path, config_name).annotate(idx = dp_id, content = comment, label_type = 'content', remove_edits = True)
+    ds = DataSet(file_name, data_path, config_name)
+    outcome = ds.annotate(idx = dp_id, content = '', label_type = 'content', remove_edits = True)
+    print(outcome)
+    original_content = ds.get_target(dp_id)
     #return redirect(f"/annotate/{config_name}/{file_name}#{dp_id}")
     return {
         'outcome': outcome,
-        #'name':f'button[name="{received_url}"]',
-        #'class':f'btn btn-{received_label_name}',
-
-       'class': "badge badge-transparent" if edited else "badge bg-info"
-        
+        'name': f'badge[name="{received_url}"]',
+        'original_content': original_content,
+        'class': "badge badge-transparent",
+        'new_url': new_url
         }
 if __name__ == "__main__":
 

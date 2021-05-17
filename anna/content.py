@@ -39,57 +39,66 @@ class FileManager():
         return df
 
     def add_line_json(self, file, entry):
-        """
-        Amends the file with a new entry. Entry is a dictionary with 'id', 'type', 'value'
-        
 
-        returns:
-            outcome - whether to increase / decrease counter
-        """
         anno_dict = self.read_json(file)
-        if entry['id'] not in anno_dict.keys():
-            anno_dict[entry['id']] = {}
 
-        # Updates label values THAT HAVE LABELS ALREADY - a list of labels selected (if a label is unselected -> it will be removed from the list)
-        ## NB: label names cannot be 'comment' or 'content'
-        if entry['type'] in anno_dict[entry['id']] and entry['type'] not in ['comment','content']:  
-            if entry['value'] in anno_dict[entry['id']][entry['type']]:
-                anno_dict[entry['id']][entry['type']].remove(entry['value'])
-                outcome = -1
-            else:
-                anno_dict[entry['id']][entry['type']].append(entry['value'])
-                outcome = 1
-        # Updates COMMENT / CONTENT values or LABELS that are new
-        else:
-            if entry['type'] == 'comment':
-                len_init_value = len(''.join(anno_dict[entry['id']].get(entry['type'],'')))
-            elif entry['type'] == 'content':
-                # In case of comment value can be edited to empty (ie line can be removed completely where there was text initially)
-                if 'content' in anno_dict[entry['id']].keys():
-                    len_init_value = 1
-                else:
-                    len_init_value = 0
-
-            # Edits can be created, updated or removed
-            if ('remove_edits' in anno_dict[entry['id']].keys()) and ('content' in anno_dict[entry['id']].keys()):
-                del anno_dict[entry['id']]['content']
-            else:
-                anno_dict[entry['id']][entry['type']] = [entry['value']]
-            if entry['type'] not in ['comment','content']:
-                outcome = 1
-            # COMMENT no text now and there was text before
-            elif len(entry['value'])==0 and len_init_value>0:
-                outcome = -1
-            # COMMENT there is text now and no text before
-            elif len(entry['value'])>0 and len_init_value==0:
-                outcome = 1
-            # COMMENT and there was text before and there is text now OR there was no text and there is still no text
-            else:
-                outcome = 0
+        anno_dict, outcome = update_annotation_item(anno_dict, entry)
         self.write_json(file, anno_dict)
         return outcome
 
+def update_annotation_item(anno_dict, entry):
+    """
+    Amends the annotation with a new entry. Entry is a dictionary with 'id', 'type', 'value'
+    
 
+    returns:
+        outcome - whether to increase / decrease counter
+    """
+    if entry['id'] not in anno_dict.keys():
+        anno_dict[entry['id']] = {}
+
+    # Updates label values THAT HAVE LABELS ALREADY - a list of labels selected (if a label is unselected -> it will be removed from the list)
+    ## NB: label names cannot be 'comment' or 'content'
+    if entry['type'] in anno_dict[entry['id']] and entry['type'] not in ['comment','content']:  
+        if entry['value'] in anno_dict[entry['id']][entry['type']]:
+            anno_dict[entry['id']][entry['type']].remove(entry['value'])
+            outcome = -1
+        else:
+            anno_dict[entry['id']][entry['type']].append(entry['value'])
+            outcome = 1
+    # Updates COMMENT / CONTENT values or LABELS that are new
+    else:
+        if entry['type'] == 'comment':
+            len_init_value = len(''.join(anno_dict[entry['id']].get(entry['type'],'')))
+        elif entry['type'] == 'content':
+            # In case of comment value can be edited to empty (ie line can be removed completely where there was text initially)
+            if 'content' in anno_dict[entry['id']].keys():
+                len_init_value = 1
+            else:
+                len_init_value = 0
+
+        # Edits can be created, updated or removed
+        if ('remove_edits' in entry.keys()) and ('content' in anno_dict[entry['id']].keys()):
+            del anno_dict[entry['id']]['content']
+        else:
+            anno_dict[entry['id']][entry['type']] = [entry['value']]
+
+        if entry['type'] not in ['comment','content']:
+            outcome = 1
+        # COMMENT no text now and there was text before (applies only to COMMENT because deleting the whole text is an edit)
+        elif len(entry['value'])==0 and len_init_value>0 and entry['type'] == 'comment':
+            outcome = -1
+        elif 'content' not in anno_dict[entry['id']].keys() and len_init_value>0 and entry['type'] == 'content':
+            outcome = -1
+        # COMMENT there is text now and no text before
+        elif len(entry['value'])>0 and len_init_value==0 and entry['type'] == 'comment':
+            outcome = 1
+        elif 'content' in anno_dict[entry['id']].keys() and len_init_value==0 and entry['type'] == 'content':
+            outcome = 1
+        # COMMENT and there was text before and there is text now OR there was no text and there is still no text
+        else:
+            outcome = 0
+    return anno_dict, outcome
 
 class DataSet():
     def __init__(self, file, data_path, config_name):
@@ -117,19 +126,27 @@ class DataSet():
             'comment': self._get_content_value(idx,'comment'),
             'hash_id': hash_idx
         }
-        return d
+        return d, hash_idx
+
+    def get_target(self, hash_idx):
+        for ii, idx in enumerate(self.df_items[self.index_col]):
+            if hash_idx == hash_text(idx):
+                target = self.df_items[self.target].iloc[ii]
+                break
+        return target
 
     def all(self):
         reserved_labels_in_use = any([c in self.labels_list for c in ['comment','content']])
         # Lists all points
         if (self.index_col in self.df_items.columns) and (self.target in self.df_items.columns) and (not reserved_labels_in_use):
             data = []
+            d_idx = []
             #for lbl in self.labels:
             #    lbl['count'] = 0
             for ii, idx, t in zip(range(len(self.df_items)),self.df_items[self.index_col],self.df_items[self.target].values):
-                d = self._read_dataset_item(ii, idx, t)
+                d, hash_idx = self._read_dataset_item(ii, idx, t)
                 data.append(d)
-
+                d_idx.append(hash_idx)
                 for lbl in self.labels:
                     lbl['count'] = lbl.get('count',0) + (1 if lbl['name'] in d['labels'] else 0)
                 self.nr_comments = self.nr_comments + (1 if len(d['comment']) else 0)
