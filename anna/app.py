@@ -67,6 +67,35 @@ def add_comment(dp_id, file_name, config_name):
         'outcome': outcome
         }
 
+@app.route("/content_edits/<string:config_name>/<string:file_name>/<string:dp_id>", methods=['POST'])
+def edit_text(dp_id, file_name, config_name):
+    comment = request.form.get("comment_field").strip()
+    print(comment)
+    outcome = DataSet(file_name, data_path, config_name).annotate(idx = dp_id, content = comment, label_type = 'content')
+    #return redirect(f"/annotate/{config_name}/{file_name}#{dp_id}")
+    return {
+        'outcome': outcome,
+        #'name':f'button[name="{received_url}"]',
+        #'class':f'btn btn-{received_label_name}',
+
+       'class': "badge badge-transparent" if edited else "badge bg-info"
+        
+        }
+
+@app.route("/remove_edits/<string:config_name>/<string:file_name>/<string:dp_id>", methods=['POST'])
+def remove_edits(dp_id, file_name, config_name):
+    comment = request.form.get("comment_field").strip()
+
+    outcome = DataSet(file_name, data_path, config_name).annotate(idx = dp_id, content = comment, label_type = 'content', remove_edits = True)
+    #return redirect(f"/annotate/{config_name}/{file_name}#{dp_id}")
+    return {
+        'outcome': outcome,
+        #'name':f'button[name="{received_url}"]',
+        #'class':f'btn btn-{received_label_name}',
+
+       'class': "badge badge-transparent" if edited else "badge bg-info"
+        
+        }
 if __name__ == "__main__":
 
     app.run(debug=True)

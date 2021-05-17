@@ -29,21 +29,19 @@ google_search:
     - Domain
     - Title
     - Snippet
-  editable_columns:
-    - Snippet
+  content_editable: True
   add_remove_lines: True
   search_column: Content
 script_editor:
   labels_config:
     - ppt
     - vox
-  index_cols: time_stamp
+  index_cols: idx
   target: text
   column_names:
     - Domain
     - Title
     - Snippet
-  editable_columns:
-    - Snippet
+  content_editable: True
   add_remove_lines: True
   search_column: Content

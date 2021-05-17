@@ -18,6 +18,11 @@
             padding-left: 2.375rem;
         }
 
+        .badge-transparent {
+            background-color: transparent;
+            border-color: #ccc;
+        }
+
         .has-search .form-control-feedback {
             position: absolute;
             z-index: 2;
@@ -48,9 +53,20 @@
         function(data,status){
             $(data.name).attr("class",data.class);
             var current_value_button = $('span[name="counter'.concat(data.label_title,'"]')).text()
-            $('span[name="counter'.concat(data.label_title,'"]')).text(parseInt(current_value_button)+parseInt(data.outcome))
+            $('span[name="counter'.concat(data.label_title,'"]')).text(parseInt(current_value_button) + parseInt(data.outcome))
         });
       });
+
+      $("span#editable_text").keyup(function(){
+        var clickedForm = $( this );
+        var url_link = clickedForm.attr( "name" );
+        var name_textarea = 'span[name="'.concat(url_link,'"]');
+        var comment_text = $(name_textarea).text();
+        $.post(url_link,
+            {'comment_field':comment_text},
+            );
+        });
+
       $("textarea#comment_text").keyup(function(){
         var clickedForm = $( this );
         var url_link = clickedForm.attr( "name" );
@@ -61,9 +77,8 @@
             function(data,status){
             var current_value_button = $('span[name="counterComments"]').text()
             $('span[name="counterComments"]').text(parseInt(current_value_button)+parseInt(data.outcome))
+            });
         });
-
-    });
     });
     </script>
     
@@ -140,6 +155,7 @@
                     <th>Comment</th>
                 </tr>
             </thead>
+            <!-- TABLE BODY -->
             <tbody>
             {% for data_point in data_list %}
             <tr>
@@ -147,14 +163,17 @@
             <td>{{data_point.id }}</td>
             {% if editable_text %}
             <td>
-                <div id="editable_text" name="/comment/{{config_name}}/{{ file_name }}/{{ data_point.hash_id }}">
-                    <div contenteditable="true">
-                        {{ data_point.title }}
-                    </div>
+                <div>
+                    <span id="editable_text" name="/content_edits/{{config_name}}/{{ file_name }}/{{ data_point.hash_id }}" contenteditable="true">
+                        {{ data_point.content }}
+                    </span>
+                    {% if data_point.content_edited %}
+                    <span id="editable_badge" name="/content_edits/{{config_name}}/{{ file_name }}/{{ data_point.hash_id }}" class="badge bg-info">edit</span>
+                    {% endif %}
                 </div>
             </td>
             {% else %}
-            <td>{{ data_point.title }}</td>
+            <td>{{ data_point.content }}</td>
             {% endif %}
             <td>
             {% for label in labels %}
