@@ -105,6 +105,19 @@ def remove_edits(dp_id, file_name, config_name):
         'class': "badge badge-transparent",
         'new_url': new_url
         }
+
+### ADD LINE
+@app.route("/add_line/<string:config_name>/<string:file_name>/<string:dp_id>")
+def add_line(dp_id, file_name, config_name):
+    list_configs, list_files = get_global_vars(data_path)
+    ds = DataSet(file_name, data_path, config_name)
+    ds.add_line(dp_id)
+    ds_list = ds.all()
+    return render_template("base.html", list_files=list_files, 
+            data_list=ds_list, file_name = file_name, labels = ds.labels, 
+            config_name = config_name, list_configs = list_configs, 
+            nr_comments = ds.nr_comments, nr_edits = ds.nr_edits, editable_text = True)
+
 if __name__ == "__main__":
 
     app.run(debug=True)
