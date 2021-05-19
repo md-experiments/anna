@@ -94,17 +94,20 @@ def update_annotation_item(anno_dict, entry):
             len_init_value = len(''.join(anno_dict[entry['id']].get(entry['type'],'')))
         elif entry['type'] == 'content':
             # In case of comment value can be edited to empty (ie line can be removed completely where there was text initially)
-            if 'content' in anno_dict[entry['id']].keys():
+            if (len(entry['id'].split('__'))==1) and 'content' in anno_dict[entry['id']].keys():
+                len_init_value = 1
+            elif (len(entry['id'].split('__'))>1) and anno_dict[entry['id']].get('content',[''])[0] != '...':
                 len_init_value = 1
             else:
                 len_init_value = 0
-
+        # If this is a new row altogether, removing edit means, returning to ...
+        if ('remove_edits' in entry.keys()) and (len(entry['id'].split('__'))>1):
+            anno_dict[entry['id']]['content'] = ['...']
+            len_init_value = 1
+            print('hits this')
         # Edits can be created, updated or removed
-        if ('remove_edits' in entry.keys()) and ('content' in anno_dict[entry['id']].keys()):
+        elif ('remove_edits' in entry.keys()) and ('content' in anno_dict[entry['id']].keys()):
             del anno_dict[entry['id']]['content']
-        # If this is a new row altogether, removing edit means, deleting the item
-        elif ('remove_edits' in entry.keys()) and (len(entry['id'].split('__'))>1):
-            del anno_dict[entry['id']]
         else:
             anno_dict[entry['id']][entry['type']] = [entry['value']]
 
@@ -113,12 +116,18 @@ def update_annotation_item(anno_dict, entry):
         # COMMENT no text now and there was text before (applies only to COMMENT because deleting the whole text is an edit)
         elif len(entry['value'])==0 and len_init_value>0 and entry['type'] == 'comment':
             outcome = -1
+        # CONTENT edit removal on original lines
         elif 'content' not in anno_dict[entry['id']].keys() and len_init_value>0 and entry['type'] == 'content':
+            outcome = -1
+        # CONTENT edit removal on added lines
+        elif (len(entry['id'].split('__'))>1) and anno_dict[entry['id']].get('content',[''])[0] == '...' and len_init_value>0 and entry['type'] == 'content':
             outcome = -1
         # COMMENT there is text now and no text before
         elif len(entry['value'])>0 and len_init_value==0 and entry['type'] == 'comment':
             outcome = 1
         elif 'content' in anno_dict[entry['id']].keys() and len_init_value==0 and entry['type'] == 'content':
+            outcome = 1
+        elif (len(entry['id'].split('__'))>1) and anno_dict[entry['id']].get('content',[''])[0] != '...' and len_init_value==0 and entry['type'] == 'content':
             outcome = 1
         # COMMENT and there was text before and there is text now OR there was no text and there is still no text
         else:
@@ -135,14 +144,7 @@ class DataSet():
         self.file_path_annotations =f"{self.file.replace('.csv','').replace('.txt','')}_{config_name}_annotations.txt"
         self.annotations = self.cm_a.read_json(self.file_path_annotations)
         
-        self.added_lines_dict = {}
-        for a in self.annotations:
-            if len(a.split('__'))>1:
-                if a.split('__')[0] in self.added_lines_dict:
-                    self.added_lines_dict[a.split('__')[0]].append(a)
-                else:
-                    self.added_lines_dict[a.split('__')[0]] = [a]
-        print('Added lines',self.added_lines_dict)
+        self.added_lines_dict = self._get_added_lines_obj()
 
     def _read_config(self,config_name):
         read_configs = read_yaml('./config.yaml')
@@ -158,41 +160,48 @@ class DataSet():
         self.index_col = config['index_cols']
         self.target = config['target']
 
-    def _get_content_edited_text(self,idx,field_name):
-        return '; '.join(self.annotations.get(hash_text(idx),{}).get(field_name,[]))
+    def _get_annotated_content(self,hash_idx,field_name):
+        return '; '.join(self.annotations.get(hash_idx,{}).get(field_name,[]))
+
+    def _get_added_lines_obj(self):
+        added_lines_dict = {}
+        for a in self.annotations:
+            if len(a.split('__'))>1:
+                if a.split('__')[0] in added_lines_dict:
+                    added_lines_dict[a.split('__')[0]].append(a)
+                else:
+                    added_lines_dict[a.split('__')[0]] = [a]
+        return added_lines_dict
 
     def _read_dataset_item(self, ii, idx, t, force_hash = None):
         if force_hash:
             hash_idx = force_hash
         else:
             hash_idx = hash_text(idx)
-        content_edited_text = self._get_content_edited_text(idx,'content')
-        content_value = t if len(content_edited_text)==0 else content_edited_text
+        content_annotated_text = self._get_annotated_content(hash_idx,'content')
+        content_value = t if len(content_annotated_text)==0 else content_annotated_text
+        if (len(content_annotated_text)>0) and (len(hash_idx.split('__'))==1):
+            content_edited = True
+        elif (len(hash_idx.split('__'))>1) and content_annotated_text != '...':
+            content_edited = True
+        else:
+            content_edited = False
         d = {
             'nr': ii,
             'id': idx,
             'content':content_value,
-            'content_edited': True if len(content_edited_text)>0 else False,
+            'content_edited': content_edited,
             'labels': self.annotations.get(hash_idx,{}).get('labels',[]), 
-            'comment': self._get_content_edited_text(idx,'comment'),
+            'comment': self._get_annotated_content(hash_idx,'comment'),
             'hash_id': hash_idx
         }
         return d, hash_idx
 
-    def get_target(self, hash_idx):
-        """Retrieve target content from original doc by hash_idx
-        The raw doc still has its original index in column index_col
-        We have a hash_idx to look for here so we need to loop through all items, hash them and check for match
-        """
-        if len(hash_idx.split('__'))>1:
-            # Check if this is an item added by the creative
-            target = ';'.join(self.annotations[hash_idx].get('content',['...']))
-        else:
-            for ii, idx in enumerate(self.df_items[self.index_col]):
-                if hash_idx == hash_text(idx):
-                    target = self.df_items[self.target].iloc[ii]
-                    break
-        return target
+    def _update_counts(self,d):
+        for lbl in self.labels:
+            lbl['count'] = lbl.get('count',0) + (1 if lbl['name'] in d['labels'] else 0)
+        self.nr_comments = self.nr_comments + (1 if len(d['comment']) else 0)
+        self.nr_edits = self.nr_edits + (1 if d['content_edited'] else 0)
 
     def all(self):
         """Retrieve all items and prepare them to be shown on the page.
@@ -202,25 +211,29 @@ class DataSet():
         # Lists all points
         if (self.index_col in self.df_items.columns) and (self.target in self.df_items.columns) and (not reserved_labels_in_use):
             data = []
-            d_idx = []
+            self.d_idx = []
             #for lbl in self.labels:
             #    lbl['count'] = 0
-            for ii, idx, t in zip(range(len(self.df_items)),self.df_items[self.index_col],self.df_items[self.target].values):
-                d, hash_idx = self._read_dataset_item(ii, idx, t)
+            overall_idx = 0
+            for idx, t in zip(self.df_items[self.index_col],self.df_items[self.target].values):
+                d, hash_idx = self._read_dataset_item(overall_idx, idx, t)
+                self._update_counts(d)
                 data.append(d)
-                d_idx.append(hash_idx)
+                self.d_idx.append(hash_idx)
+                
+                overall_idx = overall_idx+1
                 if hash_idx in self.added_lines_dict:
                     list_added_lines = self.added_lines_dict[hash_idx]
                     list_added_lines.sort()
-                    for iii, hash_anno_idx in enumerate(list_added_lines):
+                    for _, hash_anno_idx in enumerate(list_added_lines):
+
                         t = self.get_target(hash_anno_idx)
-                        d, hash_idx = self._read_dataset_item(f'{ii}_{iii}', '', t, hash_anno_idx)
+                        d, hash_idx = self._read_dataset_item(overall_idx, 'new', t, hash_anno_idx)
+                        self._update_counts(d)
                         data.append(d)    
-                        d_idx.append(hash_idx)
-                for lbl in self.labels:
-                    lbl['count'] = lbl.get('count',0) + (1 if lbl['name'] in d['labels'] else 0)
-                self.nr_comments = self.nr_comments + (1 if len(d['comment']) else 0)
-                self.nr_edits = self.nr_edits + (1 if d['content_edited'] else 0)
+                        self.d_idx.append(hash_idx)
+                        overall_idx = overall_idx+1
+
 
         elif reserved_labels_in_use:
             data = [{
@@ -241,8 +254,23 @@ class DataSet():
                     'hash_id': 'x'
                     }]
         return data
+        
+    def get_target(self, hash_idx):
+        """Retrieve target content from original doc by hash_idx
+        The raw doc still has its original index in column index_col
+        We have a hash_idx to look for here so we need to loop through all items, hash them and check for match
+        """
+        if len(hash_idx.split('__'))>1:
+            # Check if this is an item added by the creative
+            target = ';'.join(self.annotations[hash_idx].get('content',['...']))
+        else:
+            for ii, idx in enumerate(self.df_items[self.index_col]):
+                if hash_idx == hash_text(idx):
+                    target = self.df_items[self.target].iloc[ii]
+                    break
+        return target
 
-    def add_line(self, input_idx):
+    def add_line(self, input_idx, content = '...'):
         core_idx = input_idx.split('__')[0]
         matched_core_idx_ls = [a for a in self.annotations if core_idx in a]
         matched_core_idx_ls.sort()
@@ -265,7 +293,7 @@ class DataSet():
                 next_idx = matched_core_idx_ls[position_in_matched+1]
 
         idx = get_avg_index(input_idx, idx_next = next_idx)
-        content = '...'
+        
         entry = {'id': str(idx), 'value':content, 'type':'content'}
         print(entry)
         outcome = self.cm_a.update_json(self.file_path_annotations, entry)
@@ -275,12 +303,6 @@ class DataSet():
         else:
             self.added_lines_dict[core_idx] = [idx]
         return outcome
-
-    def check_surronding_lines(self, orig_idx):
-        """Function will check for any added lines as part of the annotation. If there are 
-        """
-        hash_only_idx = orig_idx.split('_')[0]
-        self.annotations.keys()
 
     def annotate(self, idx, content, label_type, remove_edits=False):
         # adds to annotations file: comment, content edits and labels
