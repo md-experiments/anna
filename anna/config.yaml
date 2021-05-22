@@ -43,5 +43,5 @@ script_editor:
     - Title
     - Snippet
   content_editable: True
-  add_remove_lines: True
-  search_column: Content
+  video_audio_select: True
+  add_lines: True

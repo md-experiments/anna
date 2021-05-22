@@ -176,10 +176,15 @@
                 <tr>
                     <th>#</th>
                     <th>ID</th>
+                    {% if editor_features.add_lines %}
                     <th></th>
+                    {% endif %}
                     <th style="width: 50%">Content</th>
                     <th>Labels</th>
                     <th>Comment</th>
+                    {% if editor_features.video_audio_select %}
+                    <th></th>
+                    {% endif %}
                 </tr>
             </thead>
             <!-- TABLE BODY -->
@@ -188,6 +193,7 @@
             <tr>
             <td>{{data_point.nr }}</td>
             <td>{{data_point.id }}</td>
+            {% if editor_features.add_lines %}
             <td>
                 <a id="add_line"  href="/add_line/{{config_name}}/{{ file_name }}/{{ data_point.hash_id }}">
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-plus-circle" viewBox="0 0 16 16">
@@ -196,9 +202,10 @@
                   </svg>
                 </a>
             </td>
+            {% endif %}
             <td>
             <div>
-            {% if editable_text %}
+            {% if editor_features.content_editable %}
                     <span id="editable_text" name="/content_edits/{{config_name}}/{{ file_name }}/{{ data_point.hash_id }}" contenteditable="true">
                         {{ data_point.content }}
                     </span>
@@ -208,7 +215,7 @@
                     <badge id="editable_badge" name="/content_edits/{{config_name}}/{{ file_name }}/{{ data_point.hash_id }}" class="badge badge-transparent">edit</span>
                     {% endif %}
             {% else %}
-            {{ data_point.content }}
+                {{ data_point.content }}
             {% endif %}
             </div>
             </td>
@@ -228,6 +235,7 @@
                 </div>
             </div>
             </td>
+            {% if editor_features.video_audio_select %}
             <td>
                 <input list="europe-countries" placeholder="Start typing...">
                 <datalist id="europe-countries">
@@ -236,6 +244,7 @@
                     <option>United Kingdom</option>
                 </datalist>       
             </td>
+            {% endif %}
             {% endfor %}
             </tr>
             </tbody>

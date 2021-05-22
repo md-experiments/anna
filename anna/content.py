@@ -157,6 +157,11 @@ class DataSet():
         self.labels_list = [lbl['name'] for lbl in self.labels]
         self.nr_comments = 0
         self.nr_edits = 0
+        self.editor_features = dict(
+            content_editable = config.get('content_editable',False),
+            video_audio_select = config.get('video_audio_select',False),
+            add_lines = config.get('add_lines',False)
+        )
         self.index_col = config['index_cols']
         self.target = config['target']
 

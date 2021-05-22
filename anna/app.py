@@ -24,7 +24,7 @@ def home0():
     return render_template("base.html", list_files=list_files, 
             data_list=ds_list, file_name = file_name, labels = ds.labels, 
             config_name = config_name, list_configs = list_configs, 
-            nr_comments = ds.nr_comments, nr_edits = ds.nr_edits, editable_text = True)
+            nr_comments = ds.nr_comments, nr_edits = ds.nr_edits, editor_features = ds.editor_features)
 
 @app.route("/annotate/<string:config_name>/<string:file_name>")
 def home(file_name,config_name):
@@ -35,7 +35,7 @@ def home(file_name,config_name):
     return render_template("base.html", list_files=list_files, 
             data_list=ds_list, file_name = file_name, labels = ds.labels, 
             config_name = config_name, list_configs = list_configs, 
-            nr_comments = ds.nr_comments, nr_edits = ds.nr_edits, editable_text = True)
+            nr_comments = ds.nr_comments, nr_edits = ds.nr_edits, editor_features = ds.editor_features)
 
 
 @app.route("/<string:label_type>/<string:config_name>/<string:file_name>/<string:label_name>/<string:dp_id>", methods=['POST'])
