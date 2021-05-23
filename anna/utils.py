@@ -40,3 +40,30 @@ def hash_text(txt,mode = 'md5'):
     elif mode == 'sha256':
         txt_hash = sha256(txt_bytes.rstrip()).hexdigest()
     return txt_hash
+
+def makedirs(path):
+    if not os.path.exists(path):
+        os.makedirs(path)
+
+def files_in_dir(path, full_path = True):
+    fls = [f for f in os.listdir(path) if os.path.isfile(os.path.join(path,f))]
+    if full_path:
+        fls = [os.path.join(path,f) for f in fls]
+    return fls
+
+def files_in_dir_filter(path, flt_txt_ls):
+    all_files = files_in_dir(path)
+    all_files = [f for f in all_files if all([(txt in f) for txt in flt_txt_ls])]
+    all_files.sort()
+    print('|'.join(flt_txt_ls),':',len(all_files),'files')
+    return all_files
+
+def files_in_dir_any_filter(path, flt_txt_ls, full_path = True):
+    if path!='' and isinstance(path,str):    
+        all_files = files_in_dir(path, full_path)
+        all_files = [f for f in all_files if any([(txt in f) for txt in flt_txt_ls])]
+        all_files.sort()
+        print('|'.join(flt_txt_ls),':',len(all_files),'files')
+    else:
+        all_files = []
+    return all_files

@@ -42,6 +42,9 @@ script_editor:
     - Domain
     - Title
     - Snippet
+  allow_comments: False
   content_editable: True
   video_audio_select: True
   add_lines: True
+  video_path: '../../endeavor/video_editor/data/stock_content'
+  audio_path: '../../endeavor/video_editor/data/bg_sounds'

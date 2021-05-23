@@ -2,16 +2,16 @@
 import json
 import os
 import pandas as pd
-from utils import hash_text, read_yaml, files_in_dir
+from utils import hash_text, read_yaml, files_in_dir_any_filter, files_in_dir
 import yaml
 
-def get_global_vars(data_path):
-    configs = read_yaml('./config.yaml')
+def get_global_vars(inputs_path, config_file_path):
+    configs = read_yaml(config_file_path)
     list_configs = list(configs.keys())
     list_configs.sort()
-    dataset_path = f'{data_path}/datasets/'
-    list_files = files_in_dir(dataset_path)
-    list_files = [f.split(dataset_path)[1] for f in list_files if not f.endswith('DS_Store')]
+    #dataset_path = f'{data_path}/datasets/'
+    list_files = files_in_dir(inputs_path)
+    list_files = [f.split(inputs_path)[1] for f in list_files if not f.endswith('DS_Store')]
     list_files.sort()
     return list_configs, list_files
 
@@ -67,6 +67,20 @@ def get_avg_index(idx_prev, idx_next = None):
             res = idx_core + '__' + str(int(idx_prev.split('__')[1])+1)
             
     return res
+    
+def check_media_paths(config):
+    """Makes various checks to config mandatory fields"""
+    config_checks_msg = []
+    for path in ['video_path','audio_path']:
+        if config.get('video_audio_select',False):
+            if path not in config.keys():
+                config_checks_msg.append(f"Need to specify {path} for content")
+            elif not os.path.exists(config[path]):
+                config_checks_msg.append(f"{path} does not exist")
+
+    if len(config_checks_msg)==0:
+        config_checks_msg = ['Config checks ok']
+    return ','.join(config_checks_msg)
 
 def update_annotation_item(anno_dict, entry):
     """
@@ -135,10 +149,10 @@ def update_annotation_item(anno_dict, entry):
     return anno_dict, outcome
 
 class DataSet():
-    def __init__(self, file, data_path, config_name):
-        self._read_config(config_name)
-        self.cm_d = FileManager(f'{data_path}/datasets/')
-        self.cm_a = FileManager(f'{data_path}/annotations/')
+    def __init__(self, file, input_path, annotations_path, config_name, config_file_path):
+        self._read_config(config_name, config_file_path)
+        self.cm_d = FileManager(input_path)
+        self.cm_a = FileManager(annotations_path)
         self.file = file
         self.df_items = self.cm_d.read_csv(self.file)
         self.file_path_annotations =f"{self.file.replace('.csv','').replace('.txt','')}_{config_name}_annotations.txt"
@@ -146,22 +160,28 @@ class DataSet():
         
         self.added_lines_dict = self._get_added_lines_obj()
 
-    def _read_config(self,config_name):
-        read_configs = read_yaml('./config.yaml')
+    def _read_config(self,config_name, config_file_path):
+        read_configs = read_yaml(config_file_path)
         config = read_configs[config_name]
 
-        button_colors =['primary','secondary','success','warning','info','light']
-        self.labels =[
+        button_colors = ['primary','secondary','success','warning','info','light']
+        self.labels = [
             {'name':lbl.lower(),'title':lbl,'button_style':button_colors[i], 'count': 0} for i,lbl in enumerate(config['labels_config'])
         ]
         self.labels_list = [lbl['name'] for lbl in self.labels]
         self.nr_comments = 0
         self.nr_edits = 0
         self.editor_features = dict(
+            allow_comments = config.get('allow_comments',False),
             content_editable = config.get('content_editable',False),
             video_audio_select = config.get('video_audio_select',False),
             add_lines = config.get('add_lines',False)
         )
+
+        self.config_checks_msg = check_media_paths(config)
+        print(self.config_checks_msg)
+        self.audio_files = files_in_dir_any_filter(config.get('audio_path',''), ['.mp3'], full_path = False)
+        self.video_files =  files_in_dir_any_filter(config.get('video_path',''), ['.mp4','.mpeg','.jpeg','.jpg'], full_path = False)
         self.index_col = config['index_cols']
         self.target = config['target']
 
@@ -238,8 +258,6 @@ class DataSet():
                         data.append(d)    
                         self.d_idx.append(hash_idx)
                         overall_idx = overall_idx+1
-
-
         elif reserved_labels_in_use:
             data = [{
                     'nr': 0,
@@ -258,7 +276,7 @@ class DataSet():
                     'comment':'',
                     'hash_id': 'x'
                     }]
-        return data
+        self.ds_list = data
         
     def get_target(self, hash_idx):
         """Retrieve target content from original doc by hash_idx
