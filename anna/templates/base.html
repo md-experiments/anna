@@ -108,6 +108,27 @@
             $('span[name="counterComments"]').text(parseInt(current_value_button)+parseInt(data.outcome))
             });
         });
+
+        var myMediaEvents = function(){
+            var clickedForm = $( this );
+            var url_link = clickedForm.attr( "name" );
+            var name_textarea = 'input[name="'.concat(url_link,'"]');
+            var comment_text = $(name_textarea).val();
+            $.post(url_link,
+                {'comment_field':comment_text},
+                function(data,status){
+                var current_value_button = $('span[name="counterMedia"]').text()
+                $('span[name="counterMedia"]').text(parseInt(current_value_button)+parseInt(data.outcome))
+                });
+        };
+
+        $("input#audio_list")
+            .keyup(myMediaEvents)
+            .click(myMediaEvents);
+
+        $("input#video_list")
+            .keyup(myMediaEvents)
+            .click(myMediaEvents);
     });
     </script>
     
@@ -173,8 +194,12 @@
                     {% for label in ds.labels %}
                     <button class="btn btn-{{ label.button_style }}">{{ label.title }}: <span name="counter{{ label.title }}">{{ label.count }}</span></a>
                     {% endfor %}
-                    <button class="btn btn-dark">Comments: <span name="counterComments">{{ ds.nr_comments }}</span></a>
-                    <button class="btn btn-dark">Edits: <span name="counterEdits">{{ ds.nr_edits }}</span></a>
+                    {% if ds.editor_features.allow_comments %}
+                    <button class="btn btn-dark">Comments: <span name="counterComments">{{ ds.nr_comments }}</span></button>
+                    {% endif %}
+                    {% if ds.editor_features.content_editable %}
+                    <button class="btn btn-dark">Edits: <span name="counterEdits">{{ ds.nr_edits }}</span></button>
+                    {% endif %}
                 </div>
             </th>
             <th>
@@ -255,9 +280,9 @@
             <td>
             {% for label in ds.labels %}
             {% if label.name in data_point.labels %}
-            <button id="button_label" class="btn btn-{{ label.button_style }}" name="/{{ page_config.prefix }}/labels/{{ page_config.config_name }}/{{ page_config.file_name }}/{{ label.name }}/{{ data_point.hash_id }}">{{ label.title }}</a>
+            <button id="button_label" class="btn btn-{{ label.button_style }}" name="/{{ page_config.prefix }}/label/labels/{{ page_config.config_name }}/{{ page_config.file_name }}/{{ label.name }}/{{ data_point.hash_id }}">{{ label.title }}</a>
             {% else %}
-            <button id="button_label" class="btn btn-outline-{{ label.button_style }}" name="/{{ page_config.prefix }}/labels/{{ page_config.config_name }}/{{ page_config.file_name }}/{{ label.name }}/{{ data_point.hash_id }}">{{ label.title }}</a>
+            <button id="button_label" class="btn btn-outline-{{ label.button_style }}" name="/{{ page_config.prefix }}/label/labels/{{ page_config.config_name }}/{{ page_config.file_name }}/{{ label.name }}/{{ data_point.hash_id }}">{{ label.title }}</a>
             {% endif %}
             {% endfor %}
             </td>
@@ -265,7 +290,7 @@
             <td>
             <div id="comment_form" class="row g-3">
                 <div class="col-auto">
-                    <textarea id="comment_text" name="/{{ page_config.prefix }}/comment/{{ page_config.config_name}}/{{ page_config.file_name }}/{{ data_point.hash_id }}" rows="1" cols="12">{{ data_point.comment }}</textarea>
+                    <textarea id="comment_text" name="/{{ page_config.prefix }}/comment/comment/{{ page_config.config_name}}/{{ page_config.file_name }}/{{ data_point.hash_id }}" rows="1" cols="12">{{ data_point.comment }}</textarea>
                 </div>
             </div>
             </td>
@@ -273,18 +298,18 @@
             {% if ds.editor_features.video_audio_select %}
             <td>
                 <div>
-                    A:
-                    <input list="audio-list" placeholder="..." cols="5">
-                    <datalist id="audio-list" name="/{{ page_config.prefix }}/audio/{{ page_config.config_name}}/{{ page_config.file_name }}/{{ data_point.hash_id }}" cols="5">
+                    A: 
+                    <input list="audio-list"  id="audio_list" value="{{data_point.media_audio_anno}}" cols="5" name="/{{ page_config.prefix }}/comment/media_audio_anno/{{ page_config.config_name}}/{{ page_config.file_name }}/{{ data_point.hash_id }}">
+                    <datalist id="audio-list" cols="5">
                         {% for aux_file in ds.audio_files %}
                         <option>{{aux_file}}</option>
                         {% endfor %}
                     </datalist>
-                </div>    
+                </div> 
                 <div>
                     V:
-                    <input list="video-list" placeholder="..." cols="5">
-                    <datalist id="video-list" name="/{{ page_config.prefix }}/video/{{ page_config.config_name}}/{{ page_config.file_name }}/{{ data_point.hash_id }}" cols="5">
+                    <input list="video-list" id="video_list" value="{{data_point.media_video_anno}}" cols="5" name="/{{ page_config.prefix }}/comment/media_video_anno/{{ page_config.config_name}}/{{ page_config.file_name }}/{{ data_point.hash_id }}">
+                    <datalist id="video-list" cols="5">
                         {% for vid_file in ds.video_files %}
                         <option>{{vid_file}}</option>
                         {% endfor %}

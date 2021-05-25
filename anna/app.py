@@ -70,7 +70,7 @@ def add_line(dp_id, file_name, config_name):
             ds = ds, )
 
 
-@app.route("/<string:label_type>/<string:config_name>/<string:file_name>/<string:label_name>/<string:dp_id>", methods=['POST'])
+@app.route("/label/<string:label_type>/<string:config_name>/<string:file_name>/<string:label_name>/<string:dp_id>", methods=['POST'])
 def update(label_name, dp_id, file_name, config_name, label_type):
     received_url = request.form['url']
     received_label_name = request.form['label_name']
@@ -95,12 +95,12 @@ def update(label_name, dp_id, file_name, config_name, label_type):
     return data
 
 ### ADDING COMMENTS
-@app.route("/comment/<string:config_name>/<string:file_name>/<string:dp_id>", methods=['POST'])
-def add_comment(dp_id, file_name, config_name):
+@app.route("/comment/<string:label_type>/<string:config_name>/<string:file_name>/<string:dp_id>", methods=['POST'])
+def add_comment(dp_id, file_name, config_name, label_type):
     comment = request.form.get("comment_field")
-
+    print(label_type)
     ds = DataSet(file_name, app.config['INPUT_PATH'], app.config['ANNOTATIONS_PATH'], config_name, app.config['CONFIG_FILE_PATH'])
-    outcome = ds.annotate(idx = dp_id, content = comment, label_type = 'comment')
+    outcome = ds.annotate(idx = dp_id, content = comment, label_type = label_type)
     #return redirect(f"/annotate/{config_name}/{file_name}#{dp_id}")
     return {
         'outcome': outcome

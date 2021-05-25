@@ -38,9 +38,9 @@ class FileManager():
             df = pd.DataFrame([])
         return df
 
-    def update_json(self, file, entry):
+    def update_json(self, file, entry, reserved_labels):
         anno_dict = self.read_json(file)
-        anno_dict, outcome = update_annotation_item(anno_dict, entry)
+        anno_dict, outcome = update_annotation_item(anno_dict, entry, reserved_labels)
         self.write_json(file, anno_dict)
         return outcome
 
@@ -82,7 +82,7 @@ def check_media_paths(config):
         config_checks_msg = ['Config checks ok']
     return ','.join(config_checks_msg)
 
-def update_annotation_item(anno_dict, entry):
+def update_annotation_item(anno_dict, entry, reserved_labels):
     """
     Amends the annotation with a new entry. Entry is a dictionary with 'id', 'type', 'value'
     
@@ -93,9 +93,13 @@ def update_annotation_item(anno_dict, entry):
     if entry['id'] not in anno_dict.keys():
         anno_dict[entry['id']] = {}
 
+    # Conent is treated different to the rest so will check if update is LABEL, CONTENT or OTHER (currently that means: comment, video, audio)
+    reserved_labels_ex_content = reserved_labels.copy()
+    reserved_labels_ex_content.remove('content')
+
     # Updates label values THAT HAVE LABELS ALREADY - a list of labels selected (if a label is unselected -> it will be removed from the list)
     ## NB: label names cannot be 'comment' or 'content'
-    if entry['type'] in anno_dict[entry['id']] and entry['type'] not in ['comment','content']:  
+    if entry['type'] in anno_dict[entry['id']] and entry['type'] not in reserved_labels:  
         if entry['value'] in anno_dict[entry['id']][entry['type']]:
             anno_dict[entry['id']][entry['type']].remove(entry['value'])
             outcome = -1
@@ -104,7 +108,7 @@ def update_annotation_item(anno_dict, entry):
             outcome = 1
     # Updates COMMENT / CONTENT values or LABELS that are new
     else:
-        if entry['type'] == 'comment':
+        if entry['type'] in reserved_labels_ex_content:
             len_init_value = len(''.join(anno_dict[entry['id']].get(entry['type'],'')))
         elif entry['type'] == 'content':
             # In case of comment value can be edited to empty (ie line can be removed completely where there was text initially)
@@ -125,10 +129,10 @@ def update_annotation_item(anno_dict, entry):
         else:
             anno_dict[entry['id']][entry['type']] = [entry['value']]
 
-        if entry['type'] not in ['comment','content']:
+        if entry['type'] not in reserved_labels:
             outcome = 1
         # COMMENT no text now and there was text before (applies only to COMMENT because deleting the whole text is an edit)
-        elif len(entry['value'])==0 and len_init_value>0 and entry['type'] == 'comment':
+        elif len(entry['value'])==0 and len_init_value>0 and entry['type'] in reserved_labels_ex_content:
             outcome = -1
         # CONTENT edit removal on original lines
         elif 'content' not in anno_dict[entry['id']].keys() and len_init_value>0 and entry['type'] == 'content':
@@ -137,7 +141,7 @@ def update_annotation_item(anno_dict, entry):
         elif (len(entry['id'].split('__'))>1) and anno_dict[entry['id']].get('content',[''])[0] == '...' and len_init_value>0 and entry['type'] == 'content':
             outcome = -1
         # COMMENT there is text now and no text before
-        elif len(entry['value'])>0 and len_init_value==0 and entry['type'] == 'comment':
+        elif len(entry['value'])>0 and len_init_value==0 and entry['type'] in reserved_labels_ex_content:
             outcome = 1
         elif 'content' in anno_dict[entry['id']].keys() and len_init_value==0 and entry['type'] == 'content':
             outcome = 1
@@ -157,7 +161,8 @@ class DataSet():
         self.df_items = self.cm_d.read_csv(self.file)
         self.file_path_annotations =f"{self.file.replace('.csv','').replace('.txt','')}_{config_name}_annotations.txt"
         self.annotations = self.cm_a.read_json(self.file_path_annotations)
-        
+        self.reserved_labels = ['comment','content','media_audio_anno','media_video_anno']
+        # Tracks line entries added to the annotation doc
         self.added_lines_dict = self._get_added_lines_obj()
 
     def _read_config(self,config_name, config_file_path):
@@ -185,8 +190,11 @@ class DataSet():
         self.index_col = config['index_cols']
         self.target = config['target']
 
-    def _get_annotated_content(self,hash_idx,field_name):
-        return '; '.join(self.annotations.get(hash_idx,{}).get(field_name,[]))
+    def _get_annotated_content(self,hash_idx,field_name,place_holder_text = ''):
+        text_out = '; '.join(self.annotations.get(hash_idx,{}).get(field_name,[]))
+        if text_out == '':
+            text_out = place_holder_text
+        return text_out
 
     def _get_added_lines_obj(self):
         added_lines_dict = {}
@@ -218,7 +226,9 @@ class DataSet():
             'content_edited': content_edited,
             'labels': self.annotations.get(hash_idx,{}).get('labels',[]), 
             'comment': self._get_annotated_content(hash_idx,'comment'),
-            'hash_id': hash_idx
+            'hash_id': hash_idx,
+            'media_audio_anno': self._get_annotated_content(hash_idx,'media_audio_anno','...'),
+            'media_video_anno': self._get_annotated_content(hash_idx,'media_video_anno','...'),
         }
         d = add_dict(d,dict_other)
         return d, hash_idx
@@ -233,7 +243,7 @@ class DataSet():
         """Retrieve all items and prepare them to be shown on the page.
         Return data: list object which will be read out on the page
         """
-        reserved_labels_in_use = any([c in self.labels_list for c in ['comment','content']])
+        reserved_labels_in_use = any([c in self.labels_list for c in self.reserved_labels])
         # Lists all points
         if (self.index_col in self.df_items.columns) and (self.target in self.df_items.columns) and (not reserved_labels_in_use):
             data = []
@@ -268,7 +278,7 @@ class DataSet():
             data = [{
                     'nr': 0,
                     'id': 0,
-                    'content':'NA: Config not allowed, label name "comment" and "content" not allowed',
+                    'content': f'NA: Config not allowed, cannot have labels with names: {", ".join(self.reserved_labels)}',
                     'labels':[], 
                     'comment':'',
                     'hash_id': 'x'
@@ -325,7 +335,7 @@ class DataSet():
         
         entry = {'id': str(idx), 'value':content, 'type':'content'}
         print(entry)
-        outcome = self.cm_a.update_json(self.file_path_annotations, entry)
+        outcome = self.cm_a.update_json(self.file_path_annotations, entry, self.reserved_labels)
         self.annotations = self.cm_a.read_json(self.file_path_annotations)
         if core_idx in self.added_lines_dict:
             self.added_lines_dict[core_idx].append(idx)
@@ -342,7 +352,7 @@ class DataSet():
                 self.added_lines_dict[idx.split('__')[0]].remove(idx)
                 if len(self.added_lines_dict[idx.split('__')[0]])==0:
                     del self.added_lines_dict[idx.split('__')[0]]
-        outcome = self.cm_a.update_json(self.file_path_annotations, entry)
+        outcome = self.cm_a.update_json(self.file_path_annotations, entry, self.reserved_labels)
         self.annotations = self.cm_a.read_json(self.file_path_annotations)
         return outcome
 

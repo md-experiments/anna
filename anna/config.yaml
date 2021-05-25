@@ -7,12 +7,14 @@ example:
     - Tired
   index_cols: idx
   target: text
+  
 transcripts:
   labels_config: 
     - Important
     - New Section
   index_cols: time_stamp
   target: text
+
 video_slicing:
   labels_config: 
     - Select
@@ -20,6 +22,13 @@ video_slicing:
     - End
   index_cols: time_stamp
   target: text
+
+selections:
+  labels_config: 
+    - Keep
+  index_cols: index
+  target: text
+
 google_search:
   labels_config: 
     - Keep
@@ -28,16 +37,17 @@ google_search:
   other_columns:
     - snippet
     - link
-  content_editable: True
+  content_editable: False
   add_remove_lines: True
   search_column: Content
+
 script_editor:
   labels_config:
     - ppt
     - vox
-  index_cols: idx
+  index_cols: index
   target: text
-  allow_comments: False
+  allow_comments: True
   content_editable: True
   video_audio_select: True
   add_lines: True
