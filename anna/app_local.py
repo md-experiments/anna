@@ -9,6 +9,9 @@ from flask import Flask, redirect
 
 
 class AppConfig():
+    NAV_BAR = [
+        {'name': 'Home', 'link': '/anna/'},
+    ]
     PREFIX = 'anna'
     INPUT_PATH = '../endeavor/text_structure_extract/data/datasets'
     CONFIG_FILE_PATH = './anna/config.yaml'

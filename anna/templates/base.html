@@ -123,23 +123,16 @@
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
               <ul class="navbar-nav">
+                {% for nav_name in page_config.nav_bar %}
                 <li class="nav-item active">
-                    <a class="nav-link" href="#">Home</a>
-                  </li>
-                <li class="nav-item">
-                  <a class="nav-link" href="/search/">Search</a>
+                    <a class="nav-link" href="{{ nav_name.link }}">{{ nav_name.name }}</a>
                 </li>
-                <li class="nav-item">
-                  <a class="nav-link" href="#">Selections</a>
-                </li>
-                <li class="nav-item">
-                  <a class="nav-link" href="/editor/">Editor</a>
-                </li>
+                {% endfor %}
               </ul>
             </div>
           </nav>
         </div>
-        <h1 class="ui center aligned header">{{page_config.prefix}}</h1>
+        <h1 class="ui center aligned header">{{page_config.prefix}} -- {{page_config.file_name}} </h1>
         <table>
             <!-- HEADER: ARTICLE selection -->
             <tr>
@@ -159,6 +152,7 @@
             </tr>
              <!-- HEADER: FORMAT, STATS & BUTTONS -->
             <tr>
+            {% if page_config.editable_config %}
             <th>Format: </th>
             <th>
                 <div class="dropdown">
@@ -172,6 +166,7 @@
                     </ul>
                 </div>
             </th>
+            {% endif %}
             <th></th>
             <th>
                 <div class="btn-group" role="group">
@@ -184,6 +179,9 @@
             </th>
             <th>
                 <a class="btn btn-warning" href="/{{ page_config.prefix }}/annotate/{{  page_config.config_name }}/{{  page_config.file_name }}" role="button">Publish</a>
+            </th>
+            <th>
+                <a class="btn btn-warning" href="/{{  page_config.next_btn_url }}/{{  page_config.config_name }}/{{  page_config.file_name }}" role="button">Next &raquo;</a>
             </th>
             </tr>
         </table>

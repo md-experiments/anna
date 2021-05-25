@@ -11,7 +11,7 @@ def get_global_vars(inputs_path, config_file_path):
     list_configs.sort()
     #dataset_path = f'{data_path}/datasets/'
     list_files = files_in_dir(inputs_path)
-    list_files = [f.split(inputs_path)[1] for f in list_files if not f.endswith('DS_Store')]
+    list_files = [f.split('/')[-1] for f in list_files if not f.endswith('DS_Store')]
     list_files.sort()
     return list_configs, list_files
 

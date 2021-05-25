@@ -1,8 +1,7 @@
 from flask import Flask, render_template, request, redirect, url_for
 import os
-from werkzeug.serving import run_simple
 import pandas as pd
-from anna.content import FileManager, DataSet, get_global_vars
+from anna.content import DataSet, get_global_vars
 
 app = Flask(__name__)
 
@@ -12,12 +11,20 @@ def home0():
     list_configs, list_files = get_global_vars(app.config['INPUT_PATH'], app.config['CONFIG_FILE_PATH'])
 
     # Default values for intro screen
-    file_name = 'alex.csv'
-    config_name = 'example'
+    file_name = '.csv' if len(list_files)==0 else list_files[0]
+    if 'WORKFLOW_CONFIG' in app.config:
+        print('WORKFLOW_CONFIG', app.config['WORKFLOW_CONFIG'] )
+        config_name = app.config['WORKFLOW_CONFIG']
+    else:
+        config_name = 'example'
+    print('file_name', file_name )
     ds = DataSet(file_name, app.config['INPUT_PATH'], app.config['ANNOTATIONS_PATH'], config_name, app.config['CONFIG_FILE_PATH'])
     ds.all()
     page_config = dict(
         prefix = app.config['PREFIX'],
+        nav_bar = app.config['NAV_BAR'],
+        editable_config = False if 'WORKFLOW_CONFIG' in app.config else True,
+        next_btn_url = app.config['WORKFLOW_NEXT_BUTTON_URL'],
         list_configs = list_configs, file_name = file_name,
         config_name = config_name, list_files = list_files
     )
@@ -32,11 +39,13 @@ def home(file_name,config_name):
     ds.all()
     page_config = dict(
         prefix = app.config['PREFIX'],
+        nav_bar = app.config['NAV_BAR'],
+        editable_config = False if 'WORKFLOW_CONFIG' in app.config else True,
+        next_btn_url = app.config['WORKFLOW_NEXT_BUTTON_URL'],
         list_configs = list_configs, file_name = file_name,
         config_name = config_name, list_files = list_files
     )
-    pd.DataFrame(ds.ds_list).to_csv(os.path.join(app.config['ANNOTATIONS_LATEST_PATH'],f'{file_name}_{config_name}_latest.csv'))
-    print(ds.other_columns)
+    pd.DataFrame(ds.ds_list).to_csv(os.path.join(app.config['ANNOTATIONS_LATEST_PATH'],f'{file_name}_{config_name}.csv'))
     return render_template("base.html", 
             page_config=page_config, 
             ds = ds, )
@@ -50,6 +59,9 @@ def add_line(dp_id, file_name, config_name):
     ds.all()
     page_config = dict(
         prefix = app.config['PREFIX'],
+        nav_bar = app.config['NAV_BAR'],
+        editable_config = False if 'WORKFLOW_CONFIG' in app.config else True,
+        next_btn_url = app.config['WORKFLOW_NEXT_BUTTON_URL'],
         list_configs = list_configs, file_name = file_name,
         config_name = config_name, list_files = list_files
     )
