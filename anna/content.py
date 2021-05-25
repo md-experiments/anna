@@ -2,7 +2,7 @@
 import json
 import os
 import pandas as pd
-from utils import hash_text, read_yaml, files_in_dir_any_filter, files_in_dir
+from anna.utils import hash_text, read_yaml, files_in_dir_any_filter, files_in_dir, add_dict
 import yaml
 
 def get_global_vars(inputs_path, config_file_path):
@@ -33,7 +33,7 @@ class FileManager():
 
     def read_csv(self,file):
         if os.path.exists(os.path.join(self.path,file)):
-            df = pd.read_csv(os.path.join(self.path,file),index_col=0)
+            df = pd.read_csv(os.path.join(self.path,file))
         else:
             df = pd.DataFrame([])
         return df
@@ -177,7 +177,7 @@ class DataSet():
             video_audio_select = config.get('video_audio_select',False),
             add_lines = config.get('add_lines',False)
         )
-
+        self.other_columns = config.get('other_columns',[])
         self.config_checks_msg = check_media_paths(config)
         print(self.config_checks_msg)
         self.audio_files = files_in_dir_any_filter(config.get('audio_path',''), ['.mp3'], full_path = False)
@@ -198,7 +198,7 @@ class DataSet():
                     added_lines_dict[a.split('__')[0]] = [a]
         return added_lines_dict
 
-    def _read_dataset_item(self, ii, idx, t, force_hash = None):
+    def _read_dataset_item(self, ii, idx, t, dict_other, force_hash = None):
         if force_hash:
             hash_idx = force_hash
         else:
@@ -220,6 +220,7 @@ class DataSet():
             'comment': self._get_annotated_content(hash_idx,'comment'),
             'hash_id': hash_idx
         }
+        d = add_dict(d,dict_other)
         return d, hash_idx
 
     def _update_counts(self,d):
@@ -240,8 +241,12 @@ class DataSet():
             #for lbl in self.labels:
             #    lbl['count'] = 0
             overall_idx = 0
-            for idx, t in zip(self.df_items[self.index_col],self.df_items[self.target].values):
-                d, hash_idx = self._read_dataset_item(overall_idx, idx, t)
+            for ii, idx in enumerate(self.df_items[self.index_col]):
+                t = self.df_items[self.target].iloc[ii]
+                dict_other = {}
+                for col in self.other_columns:
+                    dict_other[col] = self.df_items[col].iloc[ii]
+                d, hash_idx = self._read_dataset_item(overall_idx, idx, t, dict_other)
                 self._update_counts(d)
                 data.append(d)
                 self.d_idx.append(hash_idx)
@@ -253,7 +258,8 @@ class DataSet():
                     for _, hash_anno_idx in enumerate(list_added_lines):
 
                         t = self.get_target(hash_anno_idx)
-                        d, hash_idx = self._read_dataset_item(overall_idx, 'new', t, hash_anno_idx)
+                        dict_other = {col:'' for col in self.other_columns}
+                        d, hash_idx = self._read_dataset_item(overall_idx, 'new', t, dict_other, hash_anno_idx)
                         self._update_counts(d)
                         data.append(d)    
                         self.d_idx.append(hash_idx)

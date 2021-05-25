@@ -23,12 +23,11 @@ video_slicing:
 google_search:
   labels_config: 
     - Keep
-  index_cols: idx
-  target: text
-  column_names:
-    - Domain
-    - Title
-    - Snippet
+  index_cols: index
+  target: title
+  other_columns:
+    - snippet
+    - link
   content_editable: True
   add_remove_lines: True
   search_column: Content
@@ -38,10 +37,6 @@ script_editor:
     - vox
   index_cols: idx
   target: text
-  column_names:
-    - Domain
-    - Title
-    - Snippet
   allow_comments: False
   content_editable: True
   video_audio_select: True

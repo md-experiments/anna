@@ -67,3 +67,6 @@ def files_in_dir_any_filter(path, flt_txt_ls, full_path = True):
     else:
         all_files = []
     return all_files
+
+def add_dict(dict_a, dict_b):
+    return {**dict_a,**dict_b}

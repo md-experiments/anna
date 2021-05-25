@@ -1,32 +1,23 @@
 from flask import Flask, render_template, request, redirect, url_for
 import os
+from werkzeug.serving import run_simple
 import pandas as pd
-import json
-import yaml
-from utils import read_yaml, files_in_dir
-from content import FileManager, DataSet, get_global_vars
+from anna.content import FileManager, DataSet, get_global_vars
 
 app = Flask(__name__)
-
-app_paths = dict(
-    input_path = '../../endeavor/text_structure_extract/data/datasets',
-    config_file_path = './config.yaml',
-    annotations_path = '../../endeavor/text_structure_extract/data',
-    annotations_latest_path = '../../endeavor/text_structure_extract/data/annotations_latest',
-)
-#list_configs, list_files = get_global_vars(data_path)
 
 @app.route("/")
 def home0():
     # Load list_files and list_configs as global variables
-    list_configs, list_files = get_global_vars(app_paths['input_path'], app_paths['config_file_path'])
+    list_configs, list_files = get_global_vars(app.config['INPUT_PATH'], app.config['CONFIG_FILE_PATH'])
 
     # Default values for intro screen
     file_name = 'alex.csv'
     config_name = 'example'
-    ds = DataSet(file_name, app_paths['input_path'], app_paths['annotations_path'], config_name, app_paths['config_file_path'])
+    ds = DataSet(file_name, app.config['INPUT_PATH'], app.config['ANNOTATIONS_PATH'], config_name, app.config['CONFIG_FILE_PATH'])
     ds.all()
     page_config = dict(
+        prefix = app.config['PREFIX'],
         list_configs = list_configs, file_name = file_name,
         config_name = config_name, list_files = list_files
     )
@@ -36,14 +27,16 @@ def home0():
 
 @app.route("/annotate/<string:config_name>/<string:file_name>")
 def home(file_name,config_name):
-    list_configs, list_files = get_global_vars(app_paths['input_path'], app_paths['config_file_path'])
-    ds = DataSet(file_name, app_paths['input_path'], app_paths['annotations_path'], config_name, app_paths['config_file_path'])
+    list_configs, list_files = get_global_vars(app.config['INPUT_PATH'], app.config['CONFIG_FILE_PATH'])
+    ds = DataSet(file_name, app.config['INPUT_PATH'], app.config['ANNOTATIONS_PATH'], config_name, app.config['CONFIG_FILE_PATH'])
     ds.all()
     page_config = dict(
+        prefix = app.config['PREFIX'],
         list_configs = list_configs, file_name = file_name,
         config_name = config_name, list_files = list_files
     )
-    pd.DataFrame(ds.ds_list).to_csv(os.path.join(app_paths['annotations_latest_path'],f'{file_name}_{config_name}_latest.csv'))
+    pd.DataFrame(ds.ds_list).to_csv(os.path.join(app.config['ANNOTATIONS_LATEST_PATH'],f'{file_name}_{config_name}_latest.csv'))
+    print(ds.other_columns)
     return render_template("base.html", 
             page_config=page_config, 
             ds = ds, )
@@ -51,11 +44,12 @@ def home(file_name,config_name):
 ### ADD LINE
 @app.route("/add_line/<string:config_name>/<string:file_name>/<string:dp_id>")
 def add_line(dp_id, file_name, config_name):
-    list_configs, list_files = get_global_vars(app_paths['input_path'], app_paths['config_file_path'])
-    ds = DataSet(file_name, app_paths['input_path'], app_paths['annotations_path'], config_name, app_paths['config_file_path'])
+    list_configs, list_files = get_global_vars(app.config['INPUT_PATH'], app.config['CONFIG_FILE_PATH'])
+    ds = DataSet(file_name, app.config['INPUT_PATH'], app.config['ANNOTATIONS_PATH'], config_name, app.config['CONFIG_FILE_PATH'])
     ds.add_line(dp_id)
     ds.all()
     page_config = dict(
+        prefix = app.config['PREFIX'],
         list_configs = list_configs, file_name = file_name,
         config_name = config_name, list_files = list_files
     )
@@ -75,7 +69,7 @@ def update(label_name, dp_id, file_name, config_name, label_type):
     else:
         received_label_name = received_label_name.replace('btn-','btn-outline-')
 
-    ds = DataSet(file_name, app_paths['input_path'], app_paths['annotations_path'], config_name, app_paths['config_file_path'])
+    ds = DataSet(file_name, app.config['INPUT_PATH'], app.config['ANNOTATIONS_PATH'], config_name, app.config['CONFIG_FILE_PATH'])
     outcome = ds.annotate(idx = dp_id, content = label_name, label_type = label_type)
     #return redirect(f"/annotate/{config_name}/{file_name}#{dp_id}")
     
@@ -93,7 +87,7 @@ def update(label_name, dp_id, file_name, config_name, label_type):
 def add_comment(dp_id, file_name, config_name):
     comment = request.form.get("comment_field")
 
-    ds = DataSet(file_name, app_paths['input_path'], app_paths['annotations_path'], config_name, app_paths['config_file_path'])
+    ds = DataSet(file_name, app.config['INPUT_PATH'], app.config['ANNOTATIONS_PATH'], config_name, app.config['CONFIG_FILE_PATH'])
     outcome = ds.annotate(idx = dp_id, content = comment, label_type = 'comment')
     #return redirect(f"/annotate/{config_name}/{file_name}#{dp_id}")
     return {
@@ -107,7 +101,7 @@ def edit_text(dp_id, file_name, config_name):
     received_url = request.form['url']
     new_url = received_url.replace('content_edits','remove_edits')
 
-    ds = DataSet(file_name, app_paths['input_path'], app_paths['annotations_path'], config_name, app_paths['config_file_path'])
+    ds = DataSet(file_name, app.config['INPUT_PATH'], app.config['ANNOTATIONS_PATH'], config_name, app.config['CONFIG_FILE_PATH'])
     outcome = ds.annotate(idx = dp_id, content = comment, label_type = 'content')
     print(outcome)
     #return redirect(f"/annotate/{config_name}/{file_name}#{dp_id}")
@@ -124,7 +118,7 @@ def remove_edits(dp_id, file_name, config_name):
     received_url = request.form['url']
     new_url = received_url.replace('remove_edits','content_edits')
 
-    ds = DataSet(file_name, app_paths['input_path'], app_paths['annotations_path'], config_name, app_paths['config_file_path'])
+    ds = DataSet(file_name, app.config['INPUT_PATH'], app.config['ANNOTATIONS_PATH'], config_name, app.config['CONFIG_FILE_PATH'])
     outcome = ds.annotate(idx = dp_id, content = '', label_type = 'content', remove_edits = True)
     print(outcome)
     original_content = ds.get_target(dp_id)
@@ -136,7 +130,3 @@ def remove_edits(dp_id, file_name, config_name):
         'class': "badge badge-transparent",
         'new_url': new_url
         }
-
-if __name__ == "__main__":
-
-    app.run(debug=True)

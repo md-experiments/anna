@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Annotating: {{ page_config.file_name }}</title>
+    <title>{{page_config.prefix}}: {{ page_config.file_name }}</title>
 
     <!-- <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/semantic-ui@2.4.2/dist/semantic.min.css"> -->
     <!-- CSS only -->
@@ -37,6 +37,10 @@
         }
         .row{
             height:40px;
+        }
+
+        .secondary_text {
+            font-size: 15px;
         }
    </style>
     <script>
@@ -111,7 +115,31 @@
 
 <body>
     <div id="element" name="element" style="margin-top: 50px;" class="ui container">
-        <h1 class="ui center aligned header">Annotator</h1>
+        <div id="md_navbar">
+            <nav class="navbar navbar-expand-lg navbar-light bg-light">
+            <a class="navbar-brand" href="#"> </a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+              <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+              <ul class="navbar-nav">
+                <li class="nav-item active">
+                    <a class="nav-link" href="#">Home</a>
+                  </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="/search/">Search</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="#">Selections</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="/editor/">Editor</a>
+                </li>
+              </ul>
+            </div>
+          </nav>
+        </div>
+        <h1 class="ui center aligned header">{{page_config.prefix}}</h1>
         <table>
             <!-- HEADER: ARTICLE selection -->
             <tr>
@@ -123,7 +151,7 @@
                     </button>
                     <ul class="dropdown-menu" aria-labelledby="dropdownMenuLink">
                     {% for file in page_config.list_files %}
-                    <li><a class="dropdown-item" href="/annotate/{{ page_config.config_name }}/{{ file }}">{{ file }}</a></li>
+                    <li><a class="dropdown-item" href="/{{ page_config.prefix }}/annotate/{{ page_config.config_name }}/{{ file }}">{{ file }}</a></li>
                     {% endfor %}
                     </ul>
                 </div>
@@ -139,7 +167,7 @@
                     </button>
                     <ul class="dropdown-menu" aria-labelledby="dropdownMenuLink">
                     {% for conf in  page_config.list_configs %}
-                        <li><a class="dropdown-item" href="/annotate/{{ conf }}/{{  page_config.file_name }}">{{ conf }}</a></li>
+                        <li><a class="dropdown-item" href="/{{ page_config.prefix }}/annotate/{{ conf }}/{{  page_config.file_name }}">{{ conf }}</a></li>
                     {% endfor %}
                     </ul>
                 </div>
@@ -155,7 +183,7 @@
                 </div>
             </th>
             <th>
-                <a class="btn btn-warning" href="/annotate/{{  page_config.config_name }}/{{  page_config.file_name }}" role="button">Publish</a>
+                <a class="btn btn-warning" href="/{{ page_config.prefix }}/annotate/{{  page_config.config_name }}/{{  page_config.file_name }}" role="button">Publish</a>
             </th>
             </tr>
         </table>
@@ -197,7 +225,7 @@
             <td>{{data_point.id }}</td>
             {% if ds.editor_features.add_lines %}
             <td>
-                <a id="add_line"  href="/add_line/{{ page_config.config_name }}/{{ page_config.file_name }}/{{ data_point.hash_id }}">
+                <a id="add_line"  href="/{{ page_config.prefix }}/add_line/{{ page_config.config_name }}/{{ page_config.file_name }}/{{ data_point.hash_id }}">
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-plus-circle" viewBox="0 0 16 16">
                     <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
                     <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z"/>
@@ -208,25 +236,30 @@
             <td>
             <div>
             {% if ds.editor_features.content_editable %}
-                    <span id="editable_text" name="/content_edits/{{ page_config.config_name }}/{{ page_config.file_name }}/{{ data_point.hash_id }}" contenteditable="true">
+                    <span id="editable_text" name="/{{ page_config.prefix }}/content_edits/{{ page_config.config_name }}/{{ page_config.file_name }}/{{ data_point.hash_id }}" contenteditable="true">
                         {{ data_point.content }}
                     </span>
                     {% if data_point.content_edited %}
-                    <badge id="editable_badge" name="/remove_edits/{{ page_config.config_name }}/{{ page_config.file_name }}/{{ data_point.hash_id }}" class="badge bg-info">edit</span>
+                    <badge id="editable_badge" name="/{{ page_config.prefix }}/remove_edits/{{ page_config.config_name }}/{{ page_config.file_name }}/{{ data_point.hash_id }}" class="badge bg-info">edit</span>
                     {% else %}
-                    <badge id="editable_badge" name="/content_edits/{{ page_config.config_name }}/{{ page_config.file_name }}/{{ data_point.hash_id }}" class="badge badge-transparent">edit</span>
+                    <badge id="editable_badge" name="/{{ page_config.prefix }}/content_edits/{{ page_config.config_name }}/{{ page_config.file_name }}/{{ data_point.hash_id }}" class="badge badge-transparent">edit</span>
                     {% endif %}
             {% else %}
                 {{ data_point.content }}
             {% endif %}
             </div>
+            <div>
+            {% for new_col in ds.other_columns %}
+            <span class="secondary_text"><b>{{new_col}}: </b>{{ data_point[new_col] }}  </span>
+            {% endfor %}
+            </div>
             </td>
             <td>
             {% for label in ds.labels %}
             {% if label.name in data_point.labels %}
-            <button id="button_label" class="btn btn-{{ label.button_style }}" name="/labels/{{ page_config.config_name }}/{{ page_config.file_name }}/{{ label.name }}/{{ data_point.hash_id }}">{{ label.title }}</a>
+            <button id="button_label" class="btn btn-{{ label.button_style }}" name="/{{ page_config.prefix }}/labels/{{ page_config.config_name }}/{{ page_config.file_name }}/{{ label.name }}/{{ data_point.hash_id }}">{{ label.title }}</a>
             {% else %}
-            <button id="button_label" class="btn btn-outline-{{ label.button_style }}" name="/labels/{{ page_config.config_name }}/{{ page_config.file_name }}/{{ label.name }}/{{ data_point.hash_id }}">{{ label.title }}</a>
+            <button id="button_label" class="btn btn-outline-{{ label.button_style }}" name="/{{ page_config.prefix }}/labels/{{ page_config.config_name }}/{{ page_config.file_name }}/{{ label.name }}/{{ data_point.hash_id }}">{{ label.title }}</a>
             {% endif %}
             {% endfor %}
             </td>
@@ -234,7 +267,7 @@
             <td>
             <div id="comment_form" class="row g-3">
                 <div class="col-auto">
-                    <textarea id="comment_text" name="/comment/{{ page_config.config_name}}/{{ page_config.file_name }}/{{ data_point.hash_id }}" rows="1" cols="12">{{ data_point.comment }}</textarea>
+                    <textarea id="comment_text" name="/{{ page_config.prefix }}/comment/{{ page_config.config_name}}/{{ page_config.file_name }}/{{ data_point.hash_id }}" rows="1" cols="12">{{ data_point.comment }}</textarea>
                 </div>
             </div>
             </td>
@@ -244,7 +277,7 @@
                 <div>
                     A:
                     <input list="audio-list" placeholder="..." cols="5">
-                    <datalist id="audio-list" name="/audio/{{ page_config.config_name}}/{{ page_config.file_name }}/{{ data_point.hash_id }}" cols="5">
+                    <datalist id="audio-list" name="/{{ page_config.prefix }}/audio/{{ page_config.config_name}}/{{ page_config.file_name }}/{{ data_point.hash_id }}" cols="5">
                         {% for aux_file in ds.audio_files %}
                         <option>{{aux_file}}</option>
                         {% endfor %}
@@ -253,7 +286,7 @@
                 <div>
                     V:
                     <input list="video-list" placeholder="..." cols="5">
-                    <datalist id="video-list" name="/video/{{ page_config.config_name}}/{{ page_config.file_name }}/{{ data_point.hash_id }}" cols="5">
+                    <datalist id="video-list" name="/{{ page_config.prefix }}/video/{{ page_config.config_name}}/{{ page_config.file_name }}/{{ data_point.hash_id }}" cols="5">
                         {% for vid_file in ds.video_files %}
                         <option>{{vid_file}}</option>
                         {% endfor %}

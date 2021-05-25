@@ -3,6 +3,10 @@
 *.pt
 *.zip
 
+#packaging
+*.egg-info
+.vscode
+
 .DS_Store
 __pycache__/
 anna/data/*
