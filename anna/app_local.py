@@ -13,6 +13,7 @@ class AppConfig():
         {'name': 'Home', 'link': '/anna/'},
     ]
     PREFIX = 'anna'
+    PROJECT = 'anna'
     INPUT_PATH = '../endeavor/text_structure_extract/data/datasets'
     CONFIG_FILE_PATH = './anna/config.yaml'
     ANNOTATIONS_PATH = '../endeavor/text_structure_extract/data'
