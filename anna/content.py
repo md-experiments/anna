@@ -311,7 +311,7 @@ class DataSet():
 
     def add_line(self, input_idx, content = '...'):
         core_idx = input_idx.split('__')[0]
-        matched_core_idx_ls = [a for a in self.annotations if core_idx in a]
+        matched_core_idx_ls = [a for a in self.annotations if f'{core_idx}__' in a]
         matched_core_idx_ls.sort()
         # Assert input_idx is either same as core or in the added ones
         assert(any([core_idx == input_idx, input_idx in matched_core_idx_ls]))
