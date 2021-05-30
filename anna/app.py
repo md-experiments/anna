@@ -2,6 +2,7 @@ from flask import Flask, render_template, request, redirect, url_for
 import os
 import pandas as pd
 from anna.content import DataSet, get_global_vars
+from anna.utils import switch_button_state
 
 app = Flask(__name__)
 
@@ -26,7 +27,8 @@ def home0():
         editable_config = False if 'WORKFLOW_CONFIG' in app.config else True,
         next_btn_url = app.config['WORKFLOW_NEXT_BUTTON_URL'],
         list_configs = list_configs, file_name = file_name,
-        config_name = config_name, list_files = list_files
+        config_name = config_name, list_files = list_files,
+        header = app.config['WORKFLOW_HEADER']
     )
     return render_template("base.html", 
             page_config = page_config, 
@@ -43,7 +45,8 @@ def home(file_name,config_name):
         editable_config = False if 'WORKFLOW_CONFIG' in app.config else True,
         next_btn_url = app.config['WORKFLOW_NEXT_BUTTON_URL'],
         list_configs = list_configs, file_name = file_name,
-        config_name = config_name, list_files = list_files
+        config_name = config_name, list_files = list_files,
+        header = app.config['WORKFLOW_HEADER']
     )
     pd.DataFrame(ds.ds_list).to_csv(os.path.join(app.config['ANNOTATIONS_LATEST_PATH'],f'{file_name}_{config_name}.csv'))
     return render_template("base.html", 
@@ -63,7 +66,8 @@ def add_line(dp_id, file_name, config_name):
         editable_config = False if 'WORKFLOW_CONFIG' in app.config else True,
         next_btn_url = app.config['WORKFLOW_NEXT_BUTTON_URL'],
         list_configs = list_configs, file_name = file_name,
-        config_name = config_name, list_files = list_files
+        config_name = config_name, list_files = list_files,
+        header = app.config['WORKFLOW_HEADER']
     )
     return render_template("base.html", 
             page_config=page_config, 
@@ -76,18 +80,13 @@ def update(label_name, dp_id, file_name, config_name, label_type):
     received_label_name = request.form['label_name']
     label_title = request.form['label_title'].strip()
 
-    if 'outline' in received_label_name:
-        received_label_name = received_label_name.replace('outline-','')
-    else:
-        received_label_name = received_label_name.replace('btn-','btn-outline-')
-
     ds = DataSet(file_name, app.config['INPUT_PATH'], app.config['ANNOTATIONS_PATH'], config_name, app.config['CONFIG_FILE_PATH'])
     outcome = ds.annotate(idx = dp_id, content = label_name, label_type = label_type)
     #return redirect(f"/annotate/{config_name}/{file_name}#{dp_id}")
     
     data = {
         'name':f'button[name="{received_url}"]',
-        'class':f'btn btn-{received_label_name}',
+        'class':switch_button_state(received_label_name),
         'label_title':label_title,
         'outcome': outcome
     }

@@ -70,3 +70,10 @@ def files_in_dir_any_filter(path, flt_txt_ls, full_path = True):
 
 def add_dict(dict_a, dict_b):
     return {**dict_a,**dict_b}
+
+def switch_button_state(received_label_name):
+    if 'outline' in received_label_name:
+        received_label_name = received_label_name.replace('outline-','')
+    else:
+        received_label_name = received_label_name.replace('btn-','btn-outline-')
+    return f'btn btn-{received_label_name}'

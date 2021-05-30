@@ -14,6 +14,27 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta2/dist/js/bootstrap.bundle.min.js" integrity="sha384-b5kHyXgcpbZJO/tY9Ul7kGkf1S0CWuKcCD38l8YkeH8z8QjE0GmW1gYU5S9FOnJ0" crossorigin="anonymous"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <style>
+        html,
+        body,
+        .intro {
+        height: 50vh;
+        }
+
+        * {
+        box-sizing: border-box;
+        }
+
+        body {
+        background-color: #f1f1f1;
+        padding: 20px;
+        font-family: Arial;
+        }
+
+        /* Center website */
+        .main {
+        max-width: 1000px;
+        margin: auto;
+        }
         .has-search .form-control {
             padding-left: 2.375rem;
         }
@@ -145,9 +166,15 @@
             <div class="collapse navbar-collapse" id="navbarNav">
               <ul class="navbar-nav">
                 {% for nav_name in page_config.nav_bar %}
-                <li class="nav-item active">
-                    <a class="nav-link" href="{{ nav_name.link }}">{{ nav_name.name }}</a>
+                {% if nav_name.name == page_config.header %}
+                <li class="nav-item">
+                  <a class="nav-link active" href="{{ nav_name.link }}">{{ nav_name.name }}</a>
                 </li>
+                {% else %}
+                <li class="nav-item">
+                  <a class="nav-link" href="{{ nav_name.link }}">{{ nav_name.name }}</a>
+                </li>
+                {% endif %}
                 {% endfor %}
               </ul>
             </div>
