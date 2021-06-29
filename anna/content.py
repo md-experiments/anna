@@ -68,9 +68,12 @@ def get_avg_index(idx_prev, idx_next = None):
             
     return res
     
-def check_media_paths(config):
+def config_checks(config, reserved_labels):
     """Makes various checks to config mandatory fields"""
     config_checks_msg = []
+    offending_columns = set(config.get('other_columns')) & set(reserved_labels)
+    if len(offending_columns):
+        config_checks_msg.append(f"Columns {offending_columns} are reserved and should not be included in config")
     if config.get('video_preview',False):
         if config.get('video_preview_path','')=='':
             config_checks_msg.append(f"Need to specify path for video previews or set previews to false")
@@ -157,6 +160,7 @@ def update_annotation_item(anno_dict, entry, reserved_labels):
 
 class DataSet():
     def __init__(self, file, input_path, annotations_path, config_name, config_file_path):
+        self.reserved_labels = ['comment','content','media_audio_anno','media_video_anno']
         self._read_config(config_name, config_file_path)
         self.cm_d = FileManager(input_path)
         self.cm_a = FileManager(annotations_path)
@@ -164,7 +168,7 @@ class DataSet():
         self.df_items = self.cm_d.read_csv(self.file)
         self.file_path_annotations =f"{self.file.replace('.csv','').replace('.txt','')}_{config_name}_annotations.txt"
         self.annotations = self.cm_a.read_json(self.file_path_annotations)
-        self.reserved_labels = ['comment','content','media_audio_anno','media_video_anno']
+
         # Tracks line entries added to the annotation doc
         self.added_lines_dict = self._get_added_lines_obj()
 
@@ -190,7 +194,7 @@ class DataSet():
         self.video_preview_path = config.get('video_preview_path','')
         self.video_preview_url_column = config.get('video_preview_url_column','')
         self.other_columns = config.get('other_columns',[])
-        self.config_checks_msg = check_media_paths(config)
+        self.config_checks_msg = config_checks(config, self.reserved_labels)
         print(self.config_checks_msg)
         self.audio_files = files_in_dir_any_filter(config.get('audio_path',''), ['.mp3'], full_path = False)
         self.video_files =  files_in_dir_any_filter(config.get('video_path',''), ['.mp4','.mpeg','.jpeg','.jpg'], full_path = False)
@@ -264,7 +268,10 @@ class DataSet():
                 for col in self.other_columns:
                     dict_other[col] = self.df_items[col].iloc[ii]
                 if self.editor_features['video_preview']:
-                    dict_other['video_preview_url'] = os.path.join(self.video_preview_path,self.df_items[self.video_preview_url_column].iloc[ii])
+                    if isinstance(self.df_items[self.video_preview_url_column].iloc[ii], str):
+                        dict_other['video_preview_url'] = os.path.join(self.video_preview_path,self.df_items[self.video_preview_url_column].iloc[ii])
+                    else:
+                        dict_other['video_preview_url'] = ''
                 d, hash_idx = self._read_dataset_item(overall_idx, idx, t, dict_other)
                 self._update_counts(d)
                 data.append(d)
