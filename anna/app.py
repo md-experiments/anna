@@ -10,7 +10,7 @@ app = Flask(__name__)
 def home0():
     # Load list_files and list_configs as global variables
     list_configs, list_files = get_global_vars(app.config['INPUT_PATH'], app.config['CONFIG_FILE_PATH'])
-
+    # print(app.static_url_path)
     # Default values for intro screen
     file_name = '.csv' if len(list_files)==0 else list_files[0]
     if 'WORKFLOW_CONFIG' in app.config:
@@ -73,7 +73,7 @@ def add_line(dp_id, file_name, config_name):
             page_config=page_config, 
             ds = ds, )
 
-
+### LABELLING
 @app.route("/label/<string:label_type>/<string:config_name>/<string:file_name>/<string:label_name>/<string:dp_id>", methods=['POST'])
 def update(label_name, dp_id, file_name, config_name, label_type):
     received_url = request.form['url']

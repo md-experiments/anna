@@ -6,6 +6,8 @@
 #packaging
 *.egg-info
 .vscode
+dist/
+build/
 
 .DS_Store
 __pycache__/

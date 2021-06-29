@@ -71,6 +71,9 @@ def get_avg_index(idx_prev, idx_next = None):
 def check_media_paths(config):
     """Makes various checks to config mandatory fields"""
     config_checks_msg = []
+    if config.get('video_preview',False):
+        if config.get('video_preview_path','')=='':
+            config_checks_msg.append(f"Need to specify path for video previews or set previews to false")
     for path in ['video_path','audio_path']:
         if config.get('video_audio_select',False):
             if path not in config.keys():
@@ -180,8 +183,12 @@ class DataSet():
             allow_comments = config.get('allow_comments',False),
             content_editable = config.get('content_editable',False),
             video_audio_select = config.get('video_audio_select',False),
-            add_lines = config.get('add_lines',False)
+            add_lines = config.get('add_lines',False),
+            video_preview = config.get('video_preview',False),
         )
+        # Required if video preview is True
+        self.video_preview_path = config.get('video_preview_path','')
+        self.video_preview_url_column = config.get('video_preview_url_column','')
         self.other_columns = config.get('other_columns',[])
         self.config_checks_msg = check_media_paths(config)
         print(self.config_checks_msg)
@@ -256,6 +263,8 @@ class DataSet():
                 dict_other = {}
                 for col in self.other_columns:
                     dict_other[col] = self.df_items[col].iloc[ii]
+                if self.editor_features['video_preview']:
+                    dict_other['video_preview_url'] = os.path.join(self.video_preview_path,self.df_items[self.video_preview_url_column].iloc[ii])
                 d, hash_idx = self._read_dataset_item(overall_idx, idx, t, dict_other)
                 self._update_counts(d)
                 data.append(d)
