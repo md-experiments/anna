@@ -61,6 +61,18 @@
         .secondary_text {
             font-size: 15px;
         }
+
+        .video_wrapper {
+            position: relative;
+            padding-bottom: 56.25%; /* 16:9, for an aspect ratio of 1:1 change to this value to 100% */ 
+            }
+            iframe{
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
    </style>
     <script>
 
@@ -255,7 +267,7 @@
                 <col span="1" style="width: 3%;">
                 {% endif %}
                 {% if ds.editor_features.video_preview %} <!-- CONTENT -->
-                <col span="1" style="width: 25%;">
+                <col span="1" style="width: 40%;">
                 {% else %}  
                 <col span="1" style="width: 70%;"> <!-- CONTENT -->
                 {% endif %}
@@ -267,7 +279,7 @@
                 <col span="1" style="width: 20%;">
                 {% endif %}
                 {% if ds.editor_features.video_preview %}  <!-- VIDEO PREVIEW -->
-                <col span="1" style="width: 55%;">
+                <col span="1" style="width: 40%;">
                 {% endif %}
              </colgroup>
              <!-- TABLE HEAD -->
@@ -374,10 +386,16 @@
             {% endif %}
             {% if ds.editor_features.video_preview %}
             <td>
+                {% if 'https://' in data_point.video_preview_url %}
+                <div class="video_wrapper">
+                <iframe src="{{data_point.video_preview_url}}"></iframe>
+                </div>
+                {% else %}
                 <video style="width: 100%" controls>
                     <source src="{{data_point.video_preview_url}}" type="video/mp4" alt="{{ data_point.video_preview_ur }}">
                     Your browser does not support the video tag.
                 </video> 
+                {% endif %}
             </td>
             {% endif %}
             {% endfor %}

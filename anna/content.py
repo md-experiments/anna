@@ -269,7 +269,10 @@ class DataSet():
                     dict_other[col] = self.df_items[col].iloc[ii]
                 if self.editor_features['video_preview']:
                     if isinstance(self.df_items[self.video_preview_url_column].iloc[ii], str):
-                        dict_other['video_preview_url'] = os.path.join(self.video_preview_path,self.df_items[self.video_preview_url_column].iloc[ii])
+                        if self.video_preview_path.startswith('https://'):
+                            dict_other['video_preview_url'] = f'{self.video_preview_path}{self.df_items[self.video_preview_url_column].iloc[ii]}'
+                        else:
+                            dict_other['video_preview_url'] = os.path.join(self.video_preview_path,self.df_items[self.video_preview_url_column].iloc[ii])
                     else:
                         dict_other['video_preview_url'] = ''
                 d, hash_idx = self._read_dataset_item(overall_idx, idx, t, dict_other)
