@@ -13,6 +13,8 @@
     <!-- JavaScript Bundle with Popper -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta2/dist/js/bootstrap.bundle.min.js" integrity="sha384-b5kHyXgcpbZJO/tY9Ul7kGkf1S0CWuKcCD38l8YkeH8z8QjE0GmW1gYU5S9FOnJ0" crossorigin="anonymous"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
     <style>
         html,
         body,
@@ -259,92 +261,72 @@
             
             <input type="text" id="myInput" class="form-control" onkeyup="SearchFunction()" placeholder="Search content..">
         </div>
-        <table id='mainTable' class="table table-hover table-striped">
-            <colgroup>
-                <col span="1">
-                <col span="1">
+
+             <!-- TABLE HEAD -->
+            <div class="container">
+            <div class="row">
+                <div class="col-sm-1">#</div>
+                <div class="col-sm-1">ID</div>
                 {% if ds.editor_features.add_lines %}
-                <col span="1" style="width: 3%;">
+                <div class="col-sm"></div>
                 {% endif %}
-                {% if ds.editor_features.video_preview %} <!-- CONTENT -->
-                <col span="1" style="width: 40%;">
-                {% else %}  
-                <col span="1" style="width: 70%;"> <!-- CONTENT -->
+                {% if ds.editor_features.video_preview %}
+                <div class="col-sm-4">Content</div>
+                {% else %}
+                <div class="col-sm-7">Content</div>
                 {% endif %}
-                <col span="1"> <!-- LABELS -->
+                <div class="col-sm">Labels</div>
                 {% if ds.editor_features.allow_comments %}
-                <col span="1" style="width: 15%;">
+                <div class="col-sm-1">Comment</div>
                 {% endif %}
                 {% if ds.editor_features.video_audio_select %}
-                <col span="1" style="width: 20%;">
+                <div class="col-sm">Audio/Video</div>
                 {% endif %}
-                {% if ds.editor_features.video_preview %}  <!-- VIDEO PREVIEW -->
-                <col span="1" style="width: 40%;">
+                {% if ds.editor_features.video_preview %}
+                <div class="col-sm-4">Video</div>
                 {% endif %}
-             </colgroup>
-             <!-- TABLE HEAD -->
-            <thead>
-                <tr>
-                    <th>#</th>
-                    <th>ID</th>
-                    {% if ds.editor_features.add_lines %}
-                    <th></th>
-                    {% endif %}
-                    {% if ds.editor_features.video_preview %}
-                    <th>Content</th>
-                    {% else %}
-                    <th>Content</th>
-                    {% endif %}
-                    <th>Labels</th>
-                    {% if ds.editor_features.allow_comments %}
-                    <th>Comment</th>
-                    {% endif %}
-                    {% if ds.editor_features.video_audio_select %}
-                    <th>Audio/Video</th>
-                    {% endif %}
-                    {% if ds.editor_features.video_preview %}
-                    <th>Video</th>
-                    {% endif %}
-                </tr>
-            </thead>
+
             <!-- TABLE BODY -->
-            <tbody>
+            <div class="w-100"></div>
             {% for data_point in ds.ds_list %}
-            <tr>
-            <td>{{data_point.nr }}</td>
-            <td>{{data_point.id }}</td>
+            <div class="col-sm-1">{{data_point.nr }}</div>
+            <div class="col-sm-1">{{data_point.id }}</div>
             {% if ds.editor_features.add_lines %}
-            <td>
+            <div class="col-sm">
                 <a id="add_line"  href="/{{ page_config.prefix }}/add_line/{{ page_config.config_name }}/{{ page_config.file_name }}/{{ data_point.hash_id }}">
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-plus-circle" viewBox="0 0 16 16">
                     <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
                     <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z"/>
                   </svg>
                 </a>
-            </td>
+            </div>
             {% endif %}
-            <td>
-            <div>
-            {% if ds.editor_features.content_editable %}
-                    <span id="editable_text" name="/{{ page_config.prefix }}/content_edits/{{ page_config.config_name }}/{{ page_config.file_name }}/{{ data_point.hash_id }}" contenteditable="true">
-                        {{ data_point.content }}
-                    </span>
-                    {% if data_point.content_edited %}
-                    <badge id="editable_badge" name="/{{ page_config.prefix }}/remove_edits/{{ page_config.config_name }}/{{ page_config.file_name }}/{{ data_point.hash_id }}" class="badge bg-info">edit</span>
-                    {% else %}
-                    <badge id="editable_badge" name="/{{ page_config.prefix }}/content_edits/{{ page_config.config_name }}/{{ page_config.file_name }}/{{ data_point.hash_id }}" class="badge badge-transparent">edit</span>
-                    {% endif %}
+            {% if ds.editor_features.video_preview %}
+            <div class="col-sm-4">
             {% else %}
-                {{ data_point.content }}
-            {% endif %}
-            </div>
-            <div>
-            {% for new_col in ds.other_columns %}
-            <span class="secondary_text"><b>{{new_col}}: </b>{{ data_point[new_col] }}  </span>
-            {% endfor %}
-            </div>
-            </td>
-            <td>
+            <div class="col-sm-8">
+            {% endif %}  
+                <div>
+                {% if ds.editor_features.content_editable %}
+                        <span id="editable_text" name="/{{ page_config.prefix }}/content_edits/{{ page_config.config_name }}/{{ page_config.file_name }}/{{ data_point.hash_id }}" contenteditable="true">
+                            {{ data_point.content }}
+                        </span>
+                        {% if data_point.content_edited %}
+                        <badge id="editable_badge" name="/{{ page_config.prefix }}/remove_edits/{{ page_config.config_name }}/{{ page_config.file_name }}/{{ data_point.hash_id }}" class="badge bg-info">edit</span>
+                        {% else %}
+                        <badge id="editable_badge" name="/{{ page_config.prefix }}/content_edits/{{ page_config.config_name }}/{{ page_config.file_name }}/{{ data_point.hash_id }}" class="badge badge-transparent">edit</span>
+                        {% endif %}
+                {% else %}
+                    {{ data_point.content }}
+                {% endif %}
+                </div>
+                <div>
+                {% for new_col in ds.other_columns %}
+                <span class="secondary_text"><b>{{new_col}}: </b>{{ data_point[new_col] }}  </span>
+                {% endfor %}
+                </div>
+                </div>
+            <div class="col-sm">
             {% for label in ds.labels %}
             {% if label.name in data_point.labels %}
             <button id="button_label" class="btn btn-{{ label.button_style }}" name="/{{ page_config.prefix }}/label/labels/{{ page_config.config_name }}/{{ page_config.file_name }}/{{ label.name }}/{{ data_point.hash_id }}">{{ label.title }}</a>
@@ -352,18 +334,18 @@
             <button id="button_label" class="btn btn-outline-{{ label.button_style }}" name="/{{ page_config.prefix }}/label/labels/{{ page_config.config_name }}/{{ page_config.file_name }}/{{ label.name }}/{{ data_point.hash_id }}">{{ label.title }}</a>
             {% endif %}
             {% endfor %}
-            </td>
+            </div>
             {% if ds.editor_features.allow_comments %}
-            <td>
+            <div class="col-sm-1">
             <div id="comment_form" class="row g-3">
                 <div class="col-auto">
                     <textarea id="comment_text" name="/{{ page_config.prefix }}/comment/comment/{{ page_config.config_name}}/{{ page_config.file_name }}/{{ data_point.hash_id }}" rows="1" cols="12">{{ data_point.comment }}</textarea>
                 </div>
             </div>
-            </td>
+            </div>
             {% endif %}
             {% if ds.editor_features.video_audio_select %}
-            <td>
+            <div class="col-sm">
                 <div>
                     A: 
                     <input list="audio-list"  id="audio_list" value="{{data_point.media_audio_anno}}" cols="5" name="/{{ page_config.prefix }}/comment/media_audio_anno/{{ page_config.config_name}}/{{ page_config.file_name }}/{{ data_point.hash_id }}">
@@ -382,26 +364,26 @@
                         {% endfor %}
                     </datalist>
                 </div>   
-            </td>
+            </div>
             {% endif %}
             {% if ds.editor_features.video_preview %}
-            <td>
+            <div class="col-sm-4"  style="min-width: 66px;">
                 {% if 'https://' in data_point.video_preview_url %}
                 <div class="video_wrapper">
                 <iframe src="{{data_point.video_preview_url}}"></iframe>
                 </div>
                 {% else %}
                 <video style="width: 100%" controls>
-                    <source src="{{data_point.video_preview_url}}" type="video/mp4" alt="{{ data_point.video_preview_ur }}">
+                    <source src="{{data_point.video_preview_url}}" type="video/mp4" alt="{{ data_point.video_preview_url }}">
                     Your browser does not support the video tag.
                 </video> 
                 {% endif %}
-            </td>
+            </div>
             {% endif %}
+            <div class="w-100"></div>
             {% endfor %}
-            </tr>
-            </tbody>
-        </table>
+            </div>
+        </div>
 
     </div>
     <script>
