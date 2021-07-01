@@ -71,7 +71,7 @@ def get_avg_index(idx_prev, idx_next = None):
 def config_checks(config, reserved_labels):
     """Makes various checks to config mandatory fields"""
     config_checks_msg = []
-    offending_columns = set(config.get('other_columns')) & set(reserved_labels)
+    offending_columns = set(config.get('other_columns',[])) & set(config.get('hidden_columns',[])) & set(reserved_labels)
     if len(offending_columns):
         config_checks_msg.append(f"Columns {offending_columns} are reserved and should not be included in config")
     if config.get('video_preview',False):
@@ -194,6 +194,7 @@ class DataSet():
         self.video_preview_path = config.get('video_preview_path','')
         self.video_preview_url_column = config.get('video_preview_url_column','')
         self.other_columns = config.get('other_columns',[])
+        self.hidden_columns = config.get('hidden_columns',[])
         self.config_checks_msg = config_checks(config, self.reserved_labels)
         print(self.config_checks_msg)
         self.audio_files = files_in_dir_any_filter(config.get('audio_path',''), ['.mp3'], full_path = False)
@@ -267,6 +268,8 @@ class DataSet():
                 dict_other = {}
                 for col in self.other_columns:
                     dict_other[col] = self.df_items[col].iloc[ii]
+                for col in self.hidden_columns:
+                    dict_other[col] = self.df_items[col].iloc[ii]
                 if self.editor_features['video_preview']:
                     if isinstance(self.df_items[self.video_preview_url_column].iloc[ii], str):
                         if self.video_preview_path.startswith('https://'):
@@ -288,6 +291,7 @@ class DataSet():
 
                         t = self.get_target(hash_anno_idx)
                         dict_other = {col:'' for col in self.other_columns}
+                        dict_other = {col:'' for col in self.hidden_columns}
                         d, hash_idx = self._read_dataset_item(overall_idx, 'new', t, dict_other, hash_anno_idx)
                         self._update_counts(d)
                         data.append(d)    
