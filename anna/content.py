@@ -257,7 +257,17 @@ class DataSet():
         """
         reserved_labels_in_use = any([c in self.labels_list for c in self.reserved_labels])
         # Lists all points
-        if (self.index_col in self.df_items.columns) and (self.target in self.df_items.columns) and (not reserved_labels_in_use):
+        if len(self.df_items) == 0:
+            data = [{
+                    'nr': 0,
+                    'id': 0,
+                    'content': f'NA: No data yet',
+                    'labels':[], 
+                    'comment':'',
+                    'hash_id': 'x',
+                    'video_preview_url': ''
+                    }]
+        elif (self.index_col in self.df_items.columns) and (self.target in self.df_items.columns) and (not reserved_labels_in_use):
             data = []
             self.d_idx = []
             #for lbl in self.labels:
@@ -304,7 +314,8 @@ class DataSet():
                     'content': f'NA: Config not allowed, cannot have labels with names: {", ".join(self.reserved_labels)}',
                     'labels':[], 
                     'comment':'',
-                    'hash_id': 'x'
+                    'hash_id': 'x',
+                    'video_preview_url': ''
                     }]
         else:
             data = [{
@@ -313,7 +324,8 @@ class DataSet():
                     'content':'NA: Data not compatible with this config',
                     'labels':[], 
                     'comment':'',
-                    'hash_id': 'x'
+                    'hash_id': 'x',
+                    'video_preview_url': ''
                     }]
         self.ds_list = data
         

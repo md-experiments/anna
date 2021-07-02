@@ -36,7 +36,6 @@ def requires_auth(f):
 def home0():
     # Load list_files and list_configs as global variables
     list_configs, list_files = get_global_vars(app.config['INPUT_PATH'], app.config['CONFIG_FILE_PATH'])
-    print(app.config)
     # print(app.static_url_path)
     # Default values for intro screen
     file_name = '.csv' if len(list_files)==0 else list_files[0]
