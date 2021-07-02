@@ -3,6 +3,7 @@ import os
 from hashlib import sha256, md5
 import datetime
 import yaml
+from passlib.hash import pbkdf2_sha512
 
 def read_yaml(path):
     with open(path) as file:
@@ -77,3 +78,12 @@ def switch_button_state(received_label_name):
     else:
         received_label_name = received_label_name.replace('btn-','btn-outline-')
     return f'btn btn-{received_label_name}'
+
+class PassUtils:
+    @staticmethod
+    def hash_password(password: str) -> str:
+        return pbkdf2_sha512.encrypt(password)
+ 
+    @staticmethod
+    def check_hashed_password(password: str, hashed_password: str) -> str:
+        return pbkdf2_sha512.verify(password, hashed_password)

@@ -20,7 +20,9 @@ INSTALL_REQUIRES = [
     "numpy>=1.20.1",
     "pandas>=1.2.3",
     "PyYAML>=5.4.1",
-    "Werkzeug>=1.0.1"
+    "Werkzeug>=1.0.1",
+    "click<7.2.0,>=7.1.1"
+    "passlib"
     ]
 CLASSIFIERS = [
         'Development Status :: 4 - Beta',
@@ -43,6 +45,7 @@ setup(name=PACKAGE_NAME,
         long_description=LONG_DESCRIPTION,
         long_description_content_type=LONG_DESC_TYPE,
         author=AUTHOR,
+        include_package_data=True,
         license=LICENSE,
         author_email=AUTHOR_EMAIL,
         url=URL,

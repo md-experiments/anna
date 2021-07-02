@@ -3,7 +3,7 @@ from functools import wraps
 import os
 import pandas as pd
 from anna.content import DataSet, get_global_vars
-from anna.utils import switch_button_state
+from anna.utils import switch_button_state, PassUtils
 
 app = Flask(__name__)
 
@@ -12,7 +12,8 @@ def check_auth(username, password):
     """This function is called to check if a username /
     password combination is valid.
     """
-    return username == 'bobby86' and password == 'dsileinv23sdfljklsein2304AsdfOJdmseo7431sdf'
+    hsh = '$pbkdf2-sha512$25000$MSYkRAjB2Nt7T2mtlTKm9A$7WfSqMffKj0T0KcVnnGUDTUFfNHJN/MX7x2pZ5rbhBGYDw3Bo9m/MFY2HXE58k4UUvDqS/PlDjVuCHas30wX5Q'
+    return username == 'bobby86' and PassUtils.check_hashed_password(password,hsh)
 
 def authenticate():
     """Sends a 401 response that enables basic auth"""
@@ -35,6 +36,7 @@ def requires_auth(f):
 def home0():
     # Load list_files and list_configs as global variables
     list_configs, list_files = get_global_vars(app.config['INPUT_PATH'], app.config['CONFIG_FILE_PATH'])
+    print(app.config)
     # print(app.static_url_path)
     # Default values for intro screen
     file_name = '.csv' if len(list_files)==0 else list_files[0]
